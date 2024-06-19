@@ -3,8 +3,9 @@ const prisma = new PrismaClient();
 
 
 //getting complete manager details
-const getManager = async(req,res)=>{
+const getUserDetails = async(req,res)=>{
     try{
+       
         const getManagerData = await prisma.manager_details.findMany({
             select:{
                 id:true,
@@ -13,11 +14,21 @@ const getManager = async(req,res)=>{
             }
         })
         console.log({getManagerData})
+        const getRepData = await prisma.rep_details.findMany({
+            select:{
+                id:true,
+                name:true,
+                unique_id:true
+            }
+        })
+        console.log({getRepData})
+        const data = [...getManagerData ,...getRepData]
+
         res.status(200).json({
             error:false,
             success:true,
             message:"successfull",
-            data:getManagerData
+            data:data
         })
     }catch(err){
         console.log("err----",err)
@@ -36,34 +47,52 @@ const getLeaveRequest = async(req,res)=>{
         
         const leaveRequest = await prisma.leave_table.findMany({
             where:{
-                uniqueRequester_Id:{
-                    startsWith:"Mngr"
-                },
+                
                 status:"Pending"
             }
         })
         console.log({leaveRequest})
-        const mngrData = []
+        const userData = []
         for(let i=0; i<leaveRequest.length;i++){
             const leave_request = leaveRequest[i]
-            const mngrId = leaveRequest[i].uniqueRequester_Id
-            console.log({mngrId})
-            const mngrDetails = await prisma.manager_details.findMany({
+            
+            const requesterId = leaveRequest[i]?.uniqueRequester_Id
+            console.log({requesterId})
+            let data = []
+
+            if(requesterId.startsWith('Mngr')){
+            data = await prisma.manager_details.findMany({
                 where:{
-                    unique_id:mngrId
+                    unique_id:requesterId
+                },
+                select:{
+                    name:true
                 }
             })
-            console.log({mngrDetails})
-            mngrData.push({
+            console.log({data})
+
+        }else{
+            data = await prisma.rep_details.findMany({
+                where:{
+                    unique_id:requesterId
+                },
+                select:{
+                    name:true
+                }
+            }) 
+            console.log({data})
+        }
+        
+        userData.push({
                 leaveRequest: leave_request,
-                mngrDetails: mngrDetails
+                userdetails: data
               });
         }
         res.status(200).json({
             error:false,
             success:true,
             message:"Successfull",
-            data:mngrData,
+            data:userData,
             
         })
     }catch(err){
@@ -73,79 +102,6 @@ const getLeaveRequest = async(req,res)=>{
             success:false,
             message:"internal server error"
         })
-    }
-}
-
-//search leave using manager name
-const searchByName = async(req,res)=>{
-    try{
-        const {managerName} = req.body
-        if(!managerName){
-            return res.status(404).json({
-                error:true,
-                success:false,
-                message:"Manager name is required"
-            })
-        }
-        const findLeaveRequest = await prisma.leave_table.findMany({
-            where:{
-                uniqueRequester_Id:{
-                    startsWith:"Mngr"
-                },
-                
-            }
-        })
-        console.log({findLeaveRequest})
-        
-        res.status(200).json({
-            error:false,
-            success:true,
-            message:"Successfull",
-            data:findLeaveRequest
-        })
-        if(findLeaveRequest.length === 0){
-            return res.status(404).json({
-                error:true,
-                success:false,
-                message:"No result found"
-            })
-        }
-
-    }catch(err){
-        console.log("error---",err)
-        res.status(404).json({
-            error:true,
-            success:false,
-            message:"internal server error"
-        })
-    }
-}
-
-//getting complete rep details
-const getRep = async(req,res)=>{
-    try{
-        const getRepData = await prisma.rep_details.findMany({
-            select:{
-                id:true,
-                name:true,
-                unique_id:true
-            }
-        })
-        console.log({getRepData})
-        res.status(200).json({
-            error:false,
-            success:true,
-            message:"successfull",
-            data:getRepData
-        })
-    }catch(err){
-        console.log("err----",err)
-        res.status(404).json({
-            error:true,
-            success:false,
-            message:"internal server error"
-        })
-
     }
 }
 
@@ -211,4 +167,4 @@ const acceptLeaveRequest = async(req,res)=>{
 
 
 
-module.exports = {getManager,getLeaveRequest,searchByName,getRep,repLeaveRequest,acceptLeaveRequest}
+module.exports = {getUserDetails,getLeaveRequest,repLeaveRequest,acceptLeaveRequest}
