@@ -352,11 +352,27 @@ const list_expenseRequest = async(req,res)=>{
             }
         })
          console.log({list_report})
+         const userDetails = []
+         for(let i=0 ; i<list_report.length; i++){
+            const ExpenseReport = list_report[i]
+          const userId = ExpenseReport.uniqueRequesterId
+          console.log({userId})
+          const find_userDetails = await prisma.rep_details.findMany({
+            where:{
+               unique_id:userId 
+            }
+          })
+          console.log({find_userDetails})
+          userDetails.push({
+            ...ExpenseReport,
+            userDetails:find_userDetails
+          })
+         }
          res.status(200).json({
             error:false,
             success:true,
             message:"successfull",
-            data:list_report
+            data:userDetails
          })
     }catch(err){
         console.log("error-----",err)

@@ -31,6 +31,7 @@ model rep_details{
   type              String?
   password          String?
   status            String?  
+  headquarters      Int?
   // rep_doc_id        doctor_details[]  
   // rep_leave_id      leave_table[]
   // rep_expense_report expense_report[]
@@ -55,14 +56,16 @@ model rep_details{
   modified_date      DateTime?
   modified_by        String?
   status             String?
-  
-  address_id         doctor_address[]
+  address_id         Json?
+  addressID         doctor_address[]
 }
 model doctor_address{
   id                  Int            @id @default(autoincrement())
   doc_id              Int
   doc_address_id      doctor_details @relation(fields: [doc_id],references: [id])
-  headquarters_id     Int?
+  // longitude           String?
+  // latitude            String?
+  address             Json?
   created_date        DateTime?
 }
 model leave_table{
@@ -158,7 +161,17 @@ model headquarters{
   sub_headquarter     String?
 }
 
-
+model travel_plan{
+  id                 Int         @id @default(autoincrement())
+  requester_id       String?
+  headquarters_date      Json?
+  // date               String?
+  amount             String?
+  created_date       DateTime?
+  accepted_date      DateTime?
+  accepted_by        Int?
+  status             String?
+}
 
 
 
