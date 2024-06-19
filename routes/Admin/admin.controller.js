@@ -85,7 +85,7 @@ const getLeaveRequest = async(req,res)=>{
         
         userData.push({
                 leaveRequest: leave_request,
-                userdetails: data
+                userdetails: data[0]
               });
         }
         res.status(200).json({
