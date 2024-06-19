@@ -1173,7 +1173,7 @@ const get_travelPlan = async(req,res)=>{
          const get_plan = await prisma.travel_plan.findMany({
             where:{
                 requester_id:requesterId,
-                status:"Pending"
+                // status:"Pending"
             }
          })
          console.log({get_plan})

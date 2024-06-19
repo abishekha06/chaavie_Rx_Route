@@ -169,7 +169,7 @@ model travel_plan{
   amount             String?
   created_date       DateTime?
   accepted_date      DateTime?
-  accepted_by        Int?
+  accepted_by        String?
   status             String?
 }
 

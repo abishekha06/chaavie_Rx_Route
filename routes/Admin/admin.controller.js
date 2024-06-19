@@ -38,15 +38,33 @@ const getLeaveRequest = async(req,res)=>{
             where:{
                 uniqueRequester_Id:{
                     startsWith:"Mngr"
-                }
+                },
+                status:"Pending"
             }
         })
         console.log({leaveRequest})
+        const mngrData = []
+        for(let i=0; i<leaveRequest.length;i++){
+            const leave_request = leaveRequest[i]
+            const mngrId = leaveRequest[i].uniqueRequester_Id
+            console.log({mngrId})
+            const mngrDetails = await prisma.manager_details.findMany({
+                where:{
+                    unique_id:mngrId
+                }
+            })
+            console.log({mngrDetails})
+            mngrData.push({
+                leaveRequest: leave_request,
+                mngrDetails: mngrDetails
+              });
+        }
         res.status(200).json({
             error:false,
             success:true,
             message:"Successfull",
-            data:leaveRequest
+            data:mngrData,
+            
         })
     }catch(err){
         console.log("error----",err)
@@ -139,7 +157,8 @@ const repLeaveRequest = async(req,res)=>{
             where:{
                 uniqueRequester_Id:{
                     startsWith:"Rep"
-                }
+                },
+                
             }
         })
         console.log({leaveRequest})
