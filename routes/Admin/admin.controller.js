@@ -137,7 +137,8 @@ const repLeaveRequest = async(req,res)=>{
 //accept/reject leave request
 const acceptLeaveRequest = async(req,res)=>{
     try{
-        const{leaveRequestId,status,leaveType,uniqueRequesterId} = req.body
+        const{leaveRequestId,status,leaveType,uniqueRequesterId,approved_by} = req.body
+        const date = new Date()
           const leaveRequset = await prisma.leave_table.update({
             where:{
                 id:leaveRequestId,
@@ -145,7 +146,9 @@ const acceptLeaveRequest = async(req,res)=>{
                 uniqueRequester_Id:uniqueRequesterId
             },
             data:{
-                status:status
+                status:status,
+                approved_by:approved_by,
+                approved_date:date
             }
           })
           console.log({leaveRequset})
@@ -231,7 +234,8 @@ const getExpenseRequest = async(req,res)=>{
 //accept/reject expense request
 const acceptExpenseRequest = async(req,res)=>{
     try{
-        const{expenseRequestId,status,tripDate,uniqueRequesterId} = req.body
+        const{expenseRequestId,status,tripDate,uniqueRequesterId,approved_by} = req.body
+        const date = new Date()
           const expenseRequest = await prisma.expense_report.update({
             where:{
                 id:expenseRequestId,
@@ -239,7 +243,9 @@ const acceptExpenseRequest = async(req,res)=>{
                 uniqueRequesterId:uniqueRequesterId
             },
             data:{
-                status:status
+                status:status,
+                approved_by:approved_by,
+                approved_date:date
             }
           })
           console.log({expenseRequest})
@@ -258,6 +264,7 @@ const acceptExpenseRequest = async(req,res)=>{
        })
     }
 }
+
 
 
 
