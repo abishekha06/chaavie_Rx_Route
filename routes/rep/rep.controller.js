@@ -4,6 +4,7 @@ const prisma = new PrismaClient();
 
 //rep registration
 const rep_registration = async (req, res) => {
+    console.log({req})
     try {
         const { name, gender, dob, nationality, mobile, email, designation, qualification, reporting_officer, created_by, address, type, password,headquarters } = req.body
         const date = new Date()

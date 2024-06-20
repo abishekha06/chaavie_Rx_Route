@@ -265,8 +265,115 @@ const acceptExpenseRequest = async(req,res)=>{
     }
 }
 
+//for accepting multiple leave request
+const multipleLeave_approval = async (req, res) => {
+   
+    try {
+        const requestData = req.body
+         console.log({requestData})
+         const approvedData =[]
+        for (let i = 0; i < requestData.length; i++) {
+          
+
+            const { leaveRequestId,status,uniqueRequesterId,approved_by,leaveType } = requestData[i]
+            const currentDate = new Date();
+
+
+            // const istOffset = 5 * 60 * 60 * 1000 + 30 * 60 * 1000;
+
+
+            // const istDate = new Date(currentDate.getTime() + istOffset);
+
+            const approval_data = await prisma.leave_table.updateMany({
+                where: {
+                    id: leaveRequestId,
+                    uniqueRequester_Id:uniqueRequesterId,
+                    type:leaveType
+                },
+                data: {
+                    
+                    status: status,
+                    approved_by:approved_by,
+                    approved_date:currentDate
+                },
+
+            })
+
+            console.log({approval_data})
+            
+            approvedData.push(approval_data)
+       }
+       res.status(200).json({
+        error:true,
+        success:false,
+        message:'Successfull',
+        data:approvedData
+    })
+    } catch (err) {
+        console.log("error------", err)
+        res.status(400).json({
+            error: true,
+            success: false,
+            message: "internal server error"
+        })
+
+    }
+}
+
+//for accepting multiple leave request
+const multipleExpense_approval = async (req, res) => {
+   
+    try {
+        const requestData = req.body
+         console.log({requestData})
+         const approvedData =[]
+        for (let i = 0; i < requestData.length; i++) {
+          
+
+            const { expenseRequestId,status,tripDate,uniqueRequesterId,approved_by} = requestData[i]
+            const currentDate = new Date();
+
+
+            // const istOffset = 5 * 60 * 60 * 1000 + 30 * 60 * 1000;
+
+
+            // const istDate = new Date(currentDate.getTime() + istOffset);
+
+            const approval_data = await prisma.expense_report.updateMany({
+                where: {
+                id:expenseRequestId,
+                trip_date:tripDate,
+                uniqueRequesterId:uniqueRequesterId
+                },
+                data: {
+                status:status,
+                approved_by:approved_by,
+                approved_date:currentDate
+                },
+
+            })
+
+            console.log({approval_data})
+            
+            approvedData.push(approval_data)
+       }
+       res.status(200).json({
+        error:true,
+        success:false,
+        message:'Successfull',
+        data:approvedData
+    })
+    } catch (err) {
+        console.log("error------", err)
+        res.status(400).json({
+            error: true,
+            success: false,
+            message: "internal server error"
+        })
+
+    }
+}
 
 
 
-
-module.exports = {getUserDetails,getLeaveRequest,repLeaveRequest,acceptLeaveRequest,getExpenseRequest,acceptExpenseRequest}
+module.exports = {getUserDetails,getLeaveRequest,repLeaveRequest,acceptLeaveRequest,getExpenseRequest,acceptExpenseRequest,multipleLeave_approval,multipleExpense_approval}
