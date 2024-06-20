@@ -32,7 +32,7 @@ const rep_registration = async (req, res) => {
         const randomNumbers = codeArray.join('');
         code = `${prefix}${randomNumbers}`;
         console.log({ code })
-        if (name && gender && dob && nationality && mobile && email && designation && qualification && reporting_officer && created_by && address && type && password) {
+        if (name && gender && dob && nationality && mobile && email && designation && qualification && reporting_officer && created_by && address && type && password && headquarters) {
             const registration = await prisma.rep_details.create({
                 data: {
                     name: name,
