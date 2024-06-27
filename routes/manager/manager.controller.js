@@ -422,7 +422,7 @@ const search_Rep_Dr = async(req,res)=>{
         const find_fromDr = await prisma.doctor_details.findMany({
             where:{
                 doc_name:{
-                    startsWith:searchData,
+                    startsWith:`Dr.${searchData}`,
                     mode:'insensitive'
                 }
             }

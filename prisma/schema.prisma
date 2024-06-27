@@ -129,7 +129,7 @@ model reporting_details{
   products            Json?
   remarks             String?
   rep_id              Int?
-  unique_reqId        Int?
+  unique_reqId        String?
   doctor_id           Int?
   datetime            DateTime
 }

@@ -401,21 +401,7 @@ const doctorList = async(req,res)=>{
     }
 }
 
-// //add products
-// const add_products = async(req,res)=>{
-//     try{
-//         const {productName} =req.body
-//         // const addedProduct = await prisma.
 
-//     }catch(err){
-//         console.log({err})
-//         res.status(200).json({
-//             error:true,
-//             success:false,
-//             message:"internal server error"
-//         })
-//     }
-// }
 
 
 module.exports = {getUserDetails,getLeaveRequest,repLeaveRequest,acceptLeaveRequest,getExpenseRequest,acceptExpenseRequest,multipleLeave_approval,

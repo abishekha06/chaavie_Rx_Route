@@ -1161,7 +1161,7 @@ const delete_product = async (req, res) => {
                 },
                 data: {
 
-                    status: 'Inctive'
+                    status: 'Inactive'
                 }
             })
             console.log({ deleted_product })
@@ -1192,7 +1192,11 @@ const delete_product = async (req, res) => {
 const get_product = async (req, res) => {
     try {
         // const{creater_id} = req.body
-        const get_data = await prisma.add_product.findMany()
+        const get_data = await prisma.add_product.findMany({
+            where:{
+                status:"Active"
+            }
+        })
         console.log({ get_data })
         res.status(200).json({
             error: false,
@@ -1554,7 +1558,62 @@ const search_expenseTable = async(req,res)=>{
     }
 }
 
-//search chemist
+//mark as visited
+const markAsVisited = async(req,res)=>{
+    try{
+        const{reporterUniqueId,reporterId,date,time,products,remark,doctorId} = req.body
+        const currentDate =new Date()
+        const markVisited = await prisma.reporting_details.create({
+             data:{
+                unique_reqId:reporterUniqueId,
+                date:date,
+                time:time,
+                products:products,
+                remarks:remark,
+                rep_id:reporterId,
+                doctor_id:doctorId,
+                datetime:currentDate
+             }
+        })
+        console.log({markVisited})
+
+        const visitedId = markVisited.id
+        let visitReport
+        if(date && time){
+            visitReport = await prisma.reporting_details.update({
+                where:{
+                    id:visitedId
+                },
+                data:{
+                    reporting_type:"Online Reporting"
+                }
+            })
+        }else{
+            visitReport = await prisma.reporting_details.update({
+                where:{
+                    id:visitedId
+                },
+                data:{
+                    reporting_type:"Offline Reporting"
+                }
+            })
+        }
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfull",
+            data:visitReport
+        })
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
 
 
 
@@ -1567,5 +1626,6 @@ const search_expenseTable = async(req,res)=>{
 module.exports = {
     rep_registration, login, add_doctor, get_addedDoctors, leaveHistory, single_Details, delete_doctor, filter_dr, get_doctorDetail, delete_rep, report_expense,
     individual_expenseReport, add_drAddress, total_repCount, total_drCount, search_Rep, add_chemist, get_chemist, delete_chemist, search_chemist,
-    edit_chemist, add_product, delete_product,editProduct, get_product, get_headquarters,travel_plan,get_travelPlan,notifications,searchByDate,search_expenseTable
+    edit_chemist, add_product, delete_product,editProduct, get_product, get_headquarters,travel_plan,get_travelPlan,notifications,searchByDate,search_expenseTable,
+    markAsVisited
 }
