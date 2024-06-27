@@ -358,8 +358,8 @@ const multipleExpense_approval = async (req, res) => {
             approvedData.push(approval_data)
        }
        res.status(200).json({
-        error:true,
-        success:false,
+        error:false,
+        success:true,
         message:'Successfull',
         data:approvedData
     })
@@ -374,6 +374,49 @@ const multipleExpense_approval = async (req, res) => {
     }
 }
 
+//get complete doctors 
+const doctorList = async(req,res)=>{
+    try{
+        const get_doctor = await prisma.doctor_details.findMany({
+            select:{
+                id:true,
+                doc_name:true
+            }
+        })
+        console.log({get_doctor})
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:'Successfull',
+            data:get_doctor
+        })
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
+
+// //add products
+// const add_products = async(req,res)=>{
+//     try{
+//         const {productName} =req.body
+//         // const addedProduct = await prisma.
+
+//     }catch(err){
+//         console.log({err})
+//         res.status(200).json({
+//             error:true,
+//             success:false,
+//             message:"internal server error"
+//         })
+//     }
+// }
 
 
-module.exports = {getUserDetails,getLeaveRequest,repLeaveRequest,acceptLeaveRequest,getExpenseRequest,acceptExpenseRequest,multipleLeave_approval,multipleExpense_approval}
+module.exports = {getUserDetails,getLeaveRequest,repLeaveRequest,acceptLeaveRequest,getExpenseRequest,acceptExpenseRequest,multipleLeave_approval,
+    multipleExpense_approval,doctorList}

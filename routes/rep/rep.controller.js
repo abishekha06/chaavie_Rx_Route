@@ -1,5 +1,13 @@
 const { PrismaClient } = require("@prisma/client");
+const { response } = require("express");
 const prisma = new PrismaClient();
+
+function formatDate(date) {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    // const year = date.getFullYear();
+    return `${day}-${month}`;
+  }
 
 
 //rep registration
@@ -219,85 +227,184 @@ const add_doctor = async (req, res) => {
 }
 
 //getting the doctors
+// const get_addedDoctors = async (req, res) => {
+//     console.log({ req })
+//     try {
+//         const { rep_UniqueId } = req.body
+//         if (!rep_UniqueId) {
+//             return res.status(404).json({
+//                 error: true,
+//                 success: false,
+//                 message: "Rep unique id is required"
+//             })
+//         }
+//         const getDr = await prisma.doctor_details.findMany({
+//             where: {
+//                 created_UId: rep_UniqueId,
+//                 status: "active"
+//             }
+//         })
+//         console.log({ getDr })
+//         if (getDr.length === 0) {
+//             return res.status(404).json({
+//                 error: true,
+//                 success: false,
+//                 message: "Invalid unique id, No data found"
+//             })
+//         }
+//         if (rep_UniqueId.startsWith('Mngr')) {
+//             const find_mngrDetails = await prisma.manager_details.findMany({
+//                 where: {
+//                     unique_id: rep_UniqueId
+//                 }
+//             })
+//             console.log({ find_mngrDetails })
+//             const manager_id = find_mngrDetails[0].id
+//             console.log({ manager_id })
+//             const find_rep = await prisma.rep_details.findMany({
+//                 where: {
+//                     created_by: manager_id
+//                 }
+//             })
+//             console.log({ find_rep })
+//             const repaddedDR = []
+//             for (let i = 0; i < find_rep.length; i++) {
+//                 const rep_UniqueId = find_rep[0].unique_id
+//                 console.log({ rep_UniqueId })
+//                 const find_addedDr = await prisma.doctor_details.findMany({
+//                     where: {
+//                         created_UId: rep_UniqueId
+//                     }
+//                 })
+//                 console.log({ find_addedDr })
+//                 repaddedDR.push({
+//                     addedbyYou:getDr,
+//                     addedByRep:find_addedDr
+//                 })
+//             // repaddedDR.push(...getDr,...find_addedDr)
+//             }
+//             return res.status(200).json({
+//                 error: false,
+//                 success: true,
+//                 message: "successfull",
+//                 datas: repaddedDR
+//             })
+        
+//         }
+//         //stop here
+//         res.status(200).json({
+//             error: false,
+//             success: true,
+//             message: "successfull",
+//             data: getDr
+//         })
+
+//     } catch (err) {
+//         console.log("error----", err)
+//         res.status(400).json({
+//             error: true,
+//             success: false,
+//             message: "internal server error"
+//         })
+//     }
+// }
 const get_addedDoctors = async (req, res) => {
     console.log({ req })
     try {
-        const { rep_UniqueId } = req.body
+        const { rep_UniqueId } = req.body;
         if (!rep_UniqueId) {
             return res.status(404).json({
                 error: true,
                 success: false,
                 message: "Rep unique id is required"
-            })
+            });
         }
+
         const getDr = await prisma.doctor_details.findMany({
             where: {
                 created_UId: rep_UniqueId,
                 status: "active"
             }
-        })
-        console.log({ getDr })
-        if (getDr.length === 0) {
-            return res.status(404).json({
-                error: true,
-                success: false,
-                message: "Invalid unique id"
-            })
-        }
+        });
+        console.log({ getDr });
+
+        // if (getDr.length === 0) {
+        //     return res.status(404).json({
+        //         error: true,
+        //         success: false,
+        //         message: "Invalid unique id, No data found"
+        //     });
+        // }
+
         if (rep_UniqueId.startsWith('Mngr')) {
             const find_mngrDetails = await prisma.manager_details.findMany({
                 where: {
                     unique_id: rep_UniqueId
                 }
-            })
-            console.log({ find_mngrDetails })
-            const manager_id = find_mngrDetails[0].id
-            console.log({ manager_id })
+            });
+            console.log({ find_mngrDetails });
+
+            if (find_mngrDetails.length === 0) {
+                return res.status(404).json({
+                    error: true,
+                    success: false,
+                    message: "Manager not found"
+                });
+            }
+
+            const manager_id = find_mngrDetails[0].id;
+            console.log({ manager_id });
+
             const find_rep = await prisma.rep_details.findMany({
                 where: {
                     created_by: manager_id
                 }
-            })
-            console.log({ find_rep })
-            const repaddedDR = []
+            });
+            console.log({ find_rep });
+
+            const repaddedDR = [...getDr];
             for (let i = 0; i < find_rep.length; i++) {
-                const rep_UniqueId = find_rep[0].unique_id
-                console.log({ rep_UniqueId })
+                const rep_UniqueId = find_rep[i].unique_id;
+                console.log({ rep_UniqueId });
+
                 const find_addedDr = await prisma.doctor_details.findMany({
                     where: {
-                        created_UId: rep_UniqueId
+                        created_UId: rep_UniqueId,
+                        status: "active"
                     }
-                })
-                console.log({ find_addedDr })
-                repaddedDR.push({
-                    addedBy_You: getDr,
-                    addedByrep: find_addedDr
-                })
+                });
+                console.log({ find_addedDr });
+
+                repaddedDR.push(...find_addedDr);
             }
+
             return res.status(200).json({
                 error: false,
                 success: true,
-                message: "successfull",
+                message: "Successful",
                 data: repaddedDR
-            })
-
+            });
         }
+
+        // If not a manager, just return getDr
         res.status(200).json({
             error: false,
             success: true,
-            message: "successfull",
+            message: "Successful",
             data: getDr
-        })
+        });
 
     } catch (err) {
-        console.log("error----", err)
+        console.log("error----", err);
         res.status(400).json({
             error: true,
             success: false,
-            message: "internal server error"
-        })
+            message: "Internal server error"
+        });
     }
-}
+};
+
+
 
 //getting the personal leave history
 const leaveHistory = async (req, res) => {
@@ -490,7 +597,8 @@ const filter_dr = async (req, res) => {
                             mode: "insensitive"
                         }
                     }
-                ]
+                ],
+                status:"active"
             }
         })
         console.log({ filter_data })
@@ -654,6 +762,7 @@ const individual_expenseReport = async (req, res) => {
                 uniqueRequesterId: uniqueid
             }
         })
+        
         console.log({ list_individualReport })
         //find rep_details
         if(uniqueid.startsWith('Rep')){
@@ -683,6 +792,7 @@ const individual_expenseReport = async (req, res) => {
             managerDetails:managerDetails
         })
     }
+    
     } catch (err) {
         console.log("error-----", err)
         res.status(404).json({
@@ -725,18 +835,18 @@ const add_drAddress = async (req, res) => {
     }
 }
 //edit dr_address
-const edit_drAddress = async (req, res) => {
-    try {
+// const edit_drAddress = async (req, res) => {
+//     try {
 
-    } catch (err) {
-        console.log("error----", err)
-        res.status(404).json({
-            error: true,
-            success: false,
+//     } catch (err) {
+//         console.log("error----", err)
+//         res.status(404).json({
+//             error: true,
+//             success: false,
 
-        })
-    }
-}
+//         })
+//     }
+// }
 
 //total number of rep
 const total_repCount = async (req, res) => {
@@ -870,12 +980,10 @@ const add_chemist = async (req, res) => {
 //get chemist
 const get_chemist = async (req, res) => {
     try {
-        const { uniqueId } = req.body
+        // const { uniqueId } = req.body
         const getData = await prisma.add_chemist.findMany({
-            where: {
-                unique_Id: uniqueId,
-                status: "Active"
-
+            orderBy:{
+                date_time:"desc"
             }
         })
         console.log({ getData })
@@ -939,7 +1047,7 @@ const search_chemist = async (req, res) => {
                             startsWith: searchData,
                             mode: "insensitive"
                         }
-                    }, {
+                    }, { 
                         address: {
                             startsWith: searchData,
                             mode: "insensitive"
@@ -1016,11 +1124,11 @@ const edit_chemist = async (req, res) => {
 //add product
 const add_product = async (req, res) => {
     try {
-        const { created_by, product, quantity } = req.body
+        const { created_by, productName, quantity } = req.body
         const added_product = await prisma.add_product.create({
             data: {
                 created_by: created_by,
-                product_name: product,
+                product_name: productName,
                 quantity: quantity,
                 status: 'Active'
             }
@@ -1045,11 +1153,11 @@ const add_product = async (req, res) => {
 //delete product
 const delete_product = async (req, res) => {
     try {
-        const { product_id } = req.body
-        if (product_id) {
+        const { productId } = req.body
+        if (productId) {
             const deleted_product = await prisma.add_product.update({
                 where: {
-                    id: product_id
+                    id: productId
                 },
                 data: {
 
@@ -1101,6 +1209,34 @@ const get_product = async (req, res) => {
         })
     }
 }
+
+//edit product
+ const editProduct = async(req,res)=>{
+    try{
+        const{productId,productName} = req.body
+        const product = await prisma.add_product.update({
+            where:{
+                id:productId
+            },
+            data:{
+                product_name:productName
+            }
+        })
+           console.log({product})
+           res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfully edited the product",
+            data:product
+           })
+    }catch(err){
+         res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+         })
+    }
+ }
 
 //get headquarters
 const get_headquarters = async (req, res) => {
@@ -1196,6 +1332,231 @@ const get_travelPlan = async(req,res)=>{
 }
 
 
+//getting birthday and anniversary notifications
+const notifications = async(req,res)=>{
+    try{
+        
+        const tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const formattedTomorrow = formatDate(tomorrow);
+        console.log({formattedTomorrow})
+
+
+        const today = new Date()
+        const formattedToday = formatDate(today)
+        console.log({formattedToday})
+
+        const BirthdayNotification = await prisma.doctor_details.findMany({
+            where:{
+                date_of_birth:{
+                    startsWith:formattedTomorrow
+                }
+            }
+        })
+        const findAnniversary = await prisma.doctor_details.findMany({
+            where:{
+              wedding_date:{
+                startsWith:formattedTomorrow
+              }  
+            }
+        })
+        console.log({findAnniversary})
+        
+        const birthdayToday = await prisma.doctor_details.findMany({
+            where:{
+                date_of_birth:{
+                    startsWith:formattedToday
+                }
+            }
+        })
+        console.log({birthdayToday})
+        const anniversaryToday = await prisma.doctor_details.findMany({
+            where:{
+              wedding_date:{
+                startsWith:formattedToday
+              }  
+            }
+        })
+        console.log({anniversaryToday})
+        const notifications = []
+        const todayEvents = []
+        todayEvents.push({
+            todayBirthday :birthdayToday,
+            todayAnniversary :anniversaryToday
+        })
+        notifications.push({
+            BirthdayNotification:BirthdayNotification,
+            AnniversaryNotification:findAnniversary
+        })
+       
+        res.status(200).json({
+            error:false,
+            success:true,
+            // message:`Hey its ${BirthdayNotification.doc_name} Birthday!,Wish her all the best`,
+            message:"Successfull",
+            UpcomingEvents:notifications,
+            todayEvents:todayEvents
+        })
+
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+
+    }
+}
+
+//search in leave balance table 
+const searchByDate = async(req,res)=>{
+    try{
+        const{user_uniqueId,date} = req.body
+        if(user_uniqueId && date){
+            const getSearchData = await prisma.leave_table.findMany({
+                where:{
+                    uniqueRequester_Id:user_uniqueId,
+                    OR:[
+                        {
+                            from_date:{
+                                startsWith:date
+                            }
+                        },
+                        {
+                            to_date:{
+                                endsWith:date
+                            }
+                        }
+                    ]
+                }
+            }) 
+            console.log({getSearchData})
+            res.status(200).json({
+                error:false,
+                success:true,
+                message:"Successfull",
+                data:getSearchData
+            })
+            if(getSearchData.length === 0){
+               return res.status(400).json({
+                    error:false,
+                    success:true,
+                    message:"No result found",
+                  
+                }) 
+            }
+        }else{
+            return res.status(404).json({
+                error:true,
+                success:false,
+                message:"Invalid Id provided",
+              
+            }) 
+        }
+      
+      
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
+
+//search in expense table
+const search_expenseTable = async(req,res)=>{
+    try{
+        const {user_uniqueID,searchdata} = req.body
+        if(!user_uniqueID){
+            return res.status(404).json({
+                error:true,
+                success:false,
+                message:"User ID id required"
+
+            })
+        }else{
+            //finding the doctor details first
+            const findDr = await prisma.doctor_details.findMany({
+                where:{
+                    created_UId:user_uniqueID,
+                    doc_name:{
+                        startsWith:searchdata,
+                        mode:"insensitive"
+                    }
+                },
+                select:{
+                    id:true,
+                    // doc_name:true
+                }
+            })
+            console.log({findDr})
+            // const doctorId = []
+            
+            for( let i=0; i<findDr.length ; i++){
+                const doctorID = findDr[i].id
+                // console.log({doctorID})
+                const doctorExpense = await prisma.expense_report.findMany({
+                       where:{
+                        doct_id:doctorID[i],
+                        uniqueRequesterId:user_uniqueID
+                       }
+                })
+                console.log({doctorExpense})
+                // doctorId.push(doctorExpense)
+                return res.status(200).json({
+                    erorr:true,
+                    success:false,
+                    message:"Successfull",
+                    data:doctorExpense
+                })
+            }
+            // console.log({doctorId})
+        const findSearchData = await prisma.expense_report.findMany({
+            where:{
+                uniqueRequesterId:user_uniqueID,
+                OR:[
+                    {
+                        amount:{
+                            startsWith:searchdata
+                        }
+                    },
+                    {
+                        trip_date:{
+                            startsWith:searchdata   
+                        }
+                    },
+                    {
+
+                    }
+                ]
+            }
+        })
+        console.log({findSearchData})
+        return res.status(200).json({
+            erorr:true,
+            success:false,
+            message:"Successfull",
+            data:doctorExpense
+        })
+    
+    }
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
+
+//search chemist
+
+
 
 
 
@@ -1206,5 +1567,5 @@ const get_travelPlan = async(req,res)=>{
 module.exports = {
     rep_registration, login, add_doctor, get_addedDoctors, leaveHistory, single_Details, delete_doctor, filter_dr, get_doctorDetail, delete_rep, report_expense,
     individual_expenseReport, add_drAddress, total_repCount, total_drCount, search_Rep, add_chemist, get_chemist, delete_chemist, search_chemist,
-    edit_chemist, add_product, delete_product, get_product, get_headquarters,travel_plan,get_travelPlan 
+    edit_chemist, add_product, delete_product,editProduct, get_product, get_headquarters,travel_plan,get_travelPlan,notifications,searchByDate,search_expenseTable
 }

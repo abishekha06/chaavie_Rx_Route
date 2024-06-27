@@ -232,7 +232,7 @@ const getApplide_leaveReuest = async(req,res)=>{
                 uniqueRequester_Id:{
                     startsWith:"Rep"
                 },
-                status:"pending",
+                // status:"pending",
                 manager_uniqueId:managerId
 
             },
@@ -348,7 +348,7 @@ const list_expenseRequest = async(req,res)=>{
         const list_report = await prisma.expense_report.findMany({
             where:{
                 reporting_officer:reporting_officerId,
-                status:"Pending"
+                // status:"Pending"
             }
         })
          console.log({list_report})
