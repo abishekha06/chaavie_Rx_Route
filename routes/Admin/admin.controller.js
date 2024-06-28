@@ -378,9 +378,14 @@ const multipleExpense_approval = async (req, res) => {
 const doctorList = async(req,res)=>{
     try{
         const get_doctor = await prisma.doctor_details.findMany({
+           
             select:{
                 id:true,
-                doc_name:true
+                doc_name:true,
+                // status:true
+            },
+            where:{
+                status:"active"
             }
         })
         console.log({get_doctor})
@@ -401,8 +406,33 @@ const doctorList = async(req,res)=>{
     }
 }
 
+//get visit report
+const getVisitReport = async(req,res)=>{
+    try{
+        const visitReport = await prisma.reporting_details.findMany({
+           orderBy:{
+            datetime:"desc"
+           }
+        })
+       console.log({visitReport})
+       res.status(200).json({
+        error:false,
+        success:true,
+        message:"Successfull",
+        data:visitReport
+       })
+    }catch(err){
+        console.log("error----",err)
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
+
 
 
 
 module.exports = {getUserDetails,getLeaveRequest,repLeaveRequest,acceptLeaveRequest,getExpenseRequest,acceptExpenseRequest,multipleLeave_approval,
-    multipleExpense_approval,doctorList}
+    multipleExpense_approval,doctorList,getVisitReport}

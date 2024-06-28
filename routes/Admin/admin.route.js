@@ -2,7 +2,7 @@ const express = require('express')
 const adminRouter =express.Router()
 
 const { getUserDetails,getLeaveRequest,repLeaveRequest,acceptLeaveRequest,getExpenseRequest,acceptExpenseRequest,multipleLeave_approval,multipleExpense_approval,doctorList
-    
+  ,getVisitReport  
 } = require('./admin.controller')
 
 
@@ -17,7 +17,7 @@ adminRouter.post('/acceptExpenseRequest',acceptExpenseRequest) //accept or rejec
 adminRouter.post('/multipleLeave_approval',multipleLeave_approval)
 adminRouter.post('/multipleExpense_approval',multipleExpense_approval)
 adminRouter.get('/doctorList',doctorList)
-// adminRouter.post('/add_products',add_products)
+adminRouter.get('/getVisitReport',getVisitReport)
 
 
 
