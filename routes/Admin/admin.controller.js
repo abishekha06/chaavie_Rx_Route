@@ -415,11 +415,60 @@ const getVisitReport = async(req,res)=>{
            }
         })
        console.log({visitReport})
+       const data =[]
+       
+       for (let i=0; i<visitReport.length ; i++){
+        const doctorId = visitReport[i].doctor_id
+        const requesterId = visitReport[i].unique_reqId
+        console.log({requesterId})
+       const doctorDetails = await prisma.doctor_details.findMany({
+                where:{
+                    id:doctorId
+                },
+                select:{
+                    id:true,
+                    doc_name:true
+                }
+            })
+            console.log({doctorDetails})
+            let requesterData
+            if(requesterId.startsWith('Rep')){
+                requesterData = await prisma.rep_details.findMany({
+                    where:{
+                        unique_id:requesterId
+                    },
+                    select:{
+                        id:true,
+                        name:true,
+                        unique_id:true
+                    }
+                })
+            }else{
+                requesterData = await prisma.manager_details.findMany({
+                    where:{
+                        unique_id:requesterId
+                    },
+                    select:{
+                        id:true,
+                        name:true,
+                        unique_id:true
+                    }
+                })
+            }
+
+           
+            data.push({
+                ...visitReport[i],
+                doctorDetails: doctorDetails[0],
+                requesterDetails: requesterData[0]
+            });
+            
+       }
        res.status(200).json({
         error:false,
         success:true,
         message:"Successfull",
-        data:visitReport
+        data:data
        })
     }catch(err){
         console.log("error----",err)
