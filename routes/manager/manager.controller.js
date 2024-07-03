@@ -355,17 +355,33 @@ const list_expenseRequest = async(req,res)=>{
          const userDetails = []
          for(let i=0 ; i<list_report.length; i++){
             const ExpenseReport = list_report[i]
+            const dr_id = list_report[i].doct_id
           const userId = ExpenseReport.uniqueRequesterId
           console.log({userId})
           const find_userDetails = await prisma.rep_details.findMany({
             where:{
                unique_id:userId 
+            },
+            select:{
+                id:true,
+                name:true
+            }
+          })
+          //for finding the doctor details
+          const findDoctorDetails = await prisma.doctor_details.findMany({
+            where:{
+                id:dr_id
+            },
+            select:{
+                id:true,
+                doc_name:true
             }
           })
           console.log({find_userDetails})
           userDetails.push({
             ...ExpenseReport,
-            userDetails:find_userDetails
+            userDetails:find_userDetails,
+            doctorDetails:findDoctorDetails
           })
          }
          res.status(200).json({

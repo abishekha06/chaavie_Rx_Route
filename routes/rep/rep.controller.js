@@ -1,5 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
-const { response } = require("express");
+// const { response } = require("express");
 const prisma = new PrismaClient();
 
 function formatDate(date) {
@@ -202,6 +202,15 @@ const add_doctor = async (req, res) => {
                 }
             })
             console.log({ add_addressID })
+            //adding total visits in visit_record table
+            const addVisits = await prisma.visit_record.create({
+               data:{
+                requesterUniqueId:created_UniqueId,
+                dr_Id:doc_id,
+                total_visits:visits
+               }
+            })
+            console.log({addVisits})
             res.status(200).json({
                 error: true,
                 success: false,
@@ -1598,11 +1607,103 @@ const markAsVisited = async(req,res)=>{
                 }
             })
         }
+        //for getting the count of lines
+        const countVisits = await prisma.reporting_details.count({
+            where:{
+                unique_reqId:reporterUniqueId,
+                doctor_id:doctorId
+            }
+        })
+        console.log({countVisits})
+        const getVisitReport = await prisma.doctor_details.findFirst({
+            where:{
+                created_UId:reporterUniqueId,
+                id:doctorId
+            },
+            select:{
+                no_of_visits:true
+            }
+        })
+        console.log({getVisitReport})
+        const visitCount = getVisitReport.no_of_visits
+        const balanceVisit = visitCount-countVisits
+        console.log({balanceVisit})
+        const findVisitRecord = await prisma.visit_record.findFirst({
+            where:{
+                requesterUniqueId:reporterUniqueId,
+                dr_Id:doctorId
+            },
+            select:{
+                id:true
+            }
+        })
+        console.log({findVisitRecord})
+        const visitID = findVisitRecord.id
+        console.log({visitID})
+        if(!findVisitRecord){
+            return res.status(404).json({
+                error:true,
+                success:false,
+                message:"No visit record found"
+            })
+        }
+        const updateVisit = await prisma.visit_record.update({
+            where:{
+               id:visitID
+            },
+            data:{
+              requesterId:reporterId,
+              visited:countVisits,
+              balance_visit:balanceVisit
+            }
+        })
         res.status(200).json({
             error:false,
             success:true,
             message:"Successfull",
-            data:visitReport
+            data:visitReport,
+            updateVisit:updateVisit
+        })
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
+
+//get visit report
+const getVisitReport = async(req,res)=>{
+    try{
+        const visitREport = await prisma.reporting_details.findMany()
+        console.log({visitREport})
+         
+        const completeReportData = []
+        for(let i=0;i<visitREport.length;i++){
+            const reportData = visitREport[i]
+            const dr_id = reportData.doctor_id
+            // console.log({dr_id})
+            const requesterUniqueId = reportData.unique_reqId
+            // console.log({requesterUniqueId})
+            const findVisitData = await prisma.visit_record.findMany({
+                where:{
+                    requesterUniqueId:requesterUniqueId,
+                    dr_Id:dr_id
+                }
+            })
+            completeReportData.push({
+                visitREport:visitREport[i],
+                findVisitData:findVisitData
+         } )
+        }
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"successfull",
+            data:completeReportData
         })
 
     }catch(err){
@@ -1623,9 +1724,12 @@ const markAsVisited = async(req,res)=>{
 
 
 
+
+
+
 module.exports = {
     rep_registration, login, add_doctor, get_addedDoctors, leaveHistory, single_Details, delete_doctor, filter_dr, get_doctorDetail, delete_rep, report_expense,
     individual_expenseReport, add_drAddress, total_repCount, total_drCount, search_Rep, add_chemist, get_chemist, delete_chemist, search_chemist,
     edit_chemist, add_product, delete_product,editProduct, get_product, get_headquarters,travel_plan,get_travelPlan,notifications,searchByDate,search_expenseTable,
-    markAsVisited
+    markAsVisited,getVisitReport
 }
