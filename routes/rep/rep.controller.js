@@ -1678,12 +1678,12 @@ const markAsVisited = async(req,res)=>{
 //get visit report
 const getVisitReport = async(req,res)=>{
     try{
-        const visitREport = await prisma.reporting_details.findMany()
-        console.log({visitREport})
+        const visitReport = await prisma.reporting_details.findMany()
+        console.log({visitReport})
          
         const completeReportData = []
-        for(let i=0;i<visitREport.length;i++){
-            const reportData = visitREport[i]
+        for(let i=0;i<visitReport.length;i++){
+            const reportData = visitReport[i]
             const dr_id = reportData.doctor_id
             // console.log({dr_id})
             const requesterUniqueId = reportData.unique_reqId
@@ -1694,9 +1694,20 @@ const getVisitReport = async(req,res)=>{
                     dr_Id:dr_id
                 }
             })
+            const findDoctorDetails =  await prisma.doctor_details.findMany({
+                where:{
+                    id:dr_id
+                },
+                select:{
+                    id:true,
+                    doc_name:true,
+                    doc_qualification:true
+                }
+            })
             completeReportData.push({
-                visitREport:visitREport[i],
-                findVisitData:findVisitData
+                ReportDetails:visitReport[i],
+                doctorDetails:findDoctorDetails,
+                VisitDetails:findVisitData
          } )
         }
         res.status(200).json({
