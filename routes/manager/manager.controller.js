@@ -279,9 +279,11 @@ const getApplide_leaveReuest = async(req,res)=>{
 
 //editing the doctor details (rep/manager)
 const edit_doctor = async(req,res)=>{
+    // console.log("request----")
+    // console.log("reqffffuest----",req)
     try{
         const {created_UserId,dr_id,dr_name,qualification,gender,specialization,mobile,visits,dob,wedding_date,
-            products,chemist,modified_by
+            products,chemist,addressId,address
         } = req.body
         const date = new Date()
         const edit_data = await prisma.doctor_details.update({
@@ -305,6 +307,15 @@ const edit_doctor = async(req,res)=>{
             }
         })
          console.log({edit_data})
+         const editAddress = await prisma.doctor_address.update({
+            where:{
+                id:addressId
+            },
+            data:{
+              address:address
+            }
+         })
+         console.log({editAddress})
          res.status(200).json({
             error:true,
             success:false,
@@ -340,8 +351,8 @@ const list_manager = async(req,res)=>{
         })
     }
 }
-
-//list expense report
+ 
+//list expense report 
 const list_expenseRequest = async(req,res)=>{
     try{
         const{reporting_officerId} = req.body
@@ -353,6 +364,7 @@ const list_expenseRequest = async(req,res)=>{
         })
          console.log({list_report})
          const userDetails = []
+        
          for(let i=0 ; i<list_report.length; i++){
             const ExpenseReport = list_report[i]
             const dr_id = list_report[i].doct_id

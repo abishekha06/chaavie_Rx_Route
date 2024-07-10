@@ -8,7 +8,24 @@ function formatDate(date) {
     // const year = date.getFullYear();
     return `${day}-${month}`;
   }
+  function formatnewDate(date) {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
 
+  const normalizeDate = (input) => {
+    if (/^\d{8}$/.test(input)) {
+      const day = input.slice(0, 2);
+      const month = input.slice(2, 4);
+      const year = input.slice(4, 8);
+      return `${day}-${month}-${year}`;
+    }
+return input;
+  };
+  
+  
 
 //rep registration
 const rep_registration = async (req, res) => {
@@ -146,9 +163,96 @@ const login = async (req, res) => {
 }
 
 //adding doctors
+// const add_doctor = async (req, res) => {
+//     console.log(req.body.address)
+//     // console.log({req})
+//     try {
+//         const { name, qualification, gender, specialization, mobile, visits, dob, wedding_date, products, chemist, created_UniqueId, latitude, longitude, address } = req.body
+//         const date = new Date()
+//         if (name && qualification && gender && specialization && mobile && visits && dob && wedding_date && products && chemist && created_UniqueId) {
+//             const dr_registration = await prisma.doctor_details.create({
+//                 data: {
+//                     doc_name: name,
+//                     doc_qualification: qualification,
+//                     gender: gender,
+//                     specialization: specialization,
+//                     mobile: mobile,
+//                     no_of_visits: visits,
+//                     date_of_birth: dob,
+//                     wedding_date: wedding_date,
+//                     products: products,
+//                     chemist: chemist,
+//                     created_UId: created_UniqueId,
+//                     created_date: date,
+//                     status: "active"
+//                     // headquarters_id:headquarters_id
+//                 }
+//             })
+//             console.log({ dr_registration })
+//             const doc_id = dr_registration.id
+//             const address_ID = []
+//             const addedAddress = []
+//             for (let i = 0; i < address.length; i++) {
+//                 // const currentAddress = dr_registration[i]
+//                 // console.log({currentAddress})
+//                 const add_drAddress = await prisma.doctor_address.create({
+//                     data: {
+//                         doc_id: doc_id,
+//                         address: address[i],
+//                         // latitude:address.latitude,
+//                         // longitude:address.longitude,
+//                         created_date: date
+//                     }
+//                 })
+//                 console.log({ add_drAddress })
+//                 address_ID.push(add_drAddress.id)
+//                 addedAddress.push(add_drAddress)
+//             }
+
+//             //  const address_id = add_drAddress.id
+//             const add_addressID = await prisma.doctor_details.update({
+//                 where: {
+//                     id: doc_id
+//                 },
+//                 data: {
+//                     address_id: address_ID
+//                 }
+//             })
+//             console.log({ add_addressID })
+//             //adding total visits in visit_record table
+//             const addVisits = await prisma.visit_record.create({
+//                data:{
+//                 requesterUniqueId:created_UniqueId,
+//                 dr_Id:doc_id,
+//                 total_visits:visits
+//                }
+//             })
+//             console.log({addVisits})
+//             res.status(200).json({
+//                 error: true,
+//                 success: false,
+//                 message: "Successfull registered the doctor",
+//                 data: dr_registration,
+//                 addedAddress: addedAddress
+//             })
+//         } else {
+//             return res.status(404).json({
+//                 error: true,
+//                 success: false,
+//                 message: "You have missed some fields"
+//             })
+//         }
+//     } catch (err) {
+//         console.log("error----", err)
+//         res.status(404).json({
+//             error: true,
+//             success: false,
+//             message: "internal server error"
+//         })
+//     }
+// }
 const add_doctor = async (req, res) => {
-    console.log(req.body.address)
-    // console.log({req})
+    console.log({req})
     try {
         const { name, qualification, gender, specialization, mobile, visits, dob, wedding_date, products, chemist, created_UniqueId, latitude, longitude, address } = req.body
         const date = new Date()
@@ -168,7 +272,6 @@ const add_doctor = async (req, res) => {
                     created_UId: created_UniqueId,
                     created_date: date,
                     status: "active"
-                    // headquarters_id:headquarters_id
                 }
             })
             console.log({ dr_registration })
@@ -176,14 +279,10 @@ const add_doctor = async (req, res) => {
             const address_ID = []
             const addedAddress = []
             for (let i = 0; i < address.length; i++) {
-                // const currentAddress = dr_registration[i]
-                // console.log({currentAddress})
                 const add_drAddress = await prisma.doctor_address.create({
                     data: {
                         doc_id: doc_id,
                         address: address[i],
-                        // latitude:address.latitude,
-                        // longitude:address.longitude,
                         created_date: date
                     }
                 })
@@ -192,7 +291,6 @@ const add_doctor = async (req, res) => {
                 addedAddress.push(add_drAddress)
             }
 
-            //  const address_id = add_drAddress.id
             const add_addressID = await prisma.doctor_details.update({
                 where: {
                     id: doc_id
@@ -202,19 +300,18 @@ const add_doctor = async (req, res) => {
                 }
             })
             console.log({ add_addressID })
-            //adding total visits in visit_record table
-            const addVisits = await prisma.visit_record.create({
-               data:{
-                requesterUniqueId:created_UniqueId,
-                dr_Id:doc_id,
-                total_visits:visits
-               }
-            })
-            console.log({addVisits})
+            // const addVisits = await prisma.visit_record.create({
+            //    data:{
+            //     requesterUniqueId: created_UniqueId,
+            //     dr_Id: doc_id,
+            //     total_visits: visits
+            //    }
+            // })
+            // console.log({ addVisits })
             res.status(200).json({
                 error: true,
                 success: false,
-                message: "Successfull registered the doctor",
+                message: "Successfully registered the doctor",
                 data: dr_registration,
                 addedAddress: addedAddress
             })
@@ -230,7 +327,7 @@ const add_doctor = async (req, res) => {
         res.status(404).json({
             error: true,
             success: false,
-            message: "internal server error"
+            message: "Internal server error"
         })
     }
 }
@@ -764,8 +861,9 @@ const report_expense = async (req, res) => {
 
 //list expense request
 const individual_expenseReport = async (req, res) => {
-    const { uniqueid } = req.body
+    const { uniqueid,searchData } = req.body
     try {
+        if(!searchData){
         const list_individualReport = await prisma.expense_report.findMany({
             where: {
                 uniqueRequesterId: uniqueid
@@ -773,6 +871,27 @@ const individual_expenseReport = async (req, res) => {
         })
         
         console.log({ list_individualReport })
+        const completeExpenseData = []
+        for(let i=0; i<list_individualReport.length ;i++){
+            const getExpenseReport = list_individualReport[i]
+           
+            const drId = getExpenseReport.doct_id
+            console.log({drId})
+            const drDetails = await prisma.doctor_details.findMany({
+                where:{
+                    id:drId
+                },
+                select:{
+                    id:true,
+                    doc_name:true
+                }
+            }) 
+            console.log({drDetails})
+            completeExpenseData.push({
+                ...getExpenseReport,
+                doctorDetails:drDetails
+            })
+        }
         //find rep_details
         if(uniqueid.startsWith('Rep')){
         const rep_details = await prisma.rep_details.findMany({
@@ -788,6 +907,7 @@ const individual_expenseReport = async (req, res) => {
             rep_details:rep_details
         })
     }else{
+
         const managerDetails = await prisma.manager_details.findMany({
             where:{
                 unique_id:uniqueid
@@ -797,10 +917,71 @@ const individual_expenseReport = async (req, res) => {
             error: false,
             success: true,
             message: "successfull",
-            data: list_individualReport,
+            data: completeExpenseData,
             managerDetails:managerDetails
         })
     }
+}else{
+    const findDr = await prisma.doctor_details.findMany({
+        where:{
+            created_UId:uniqueid,
+           
+            doc_name:{
+                startsWith:searchData,
+                mode:"insensitive"
+            }
+        },
+        select:{
+            id:true,
+            // doc_name:true
+        }
+    })
+    console.log({findDr})
+    // const doctorId = []
+    
+    for( let i=0; i<findDr.length ; i++){
+        const doctorID = findDr[i].id
+        // console.log({doctorID} )
+        const doctorExpense = await prisma.expense_report.findMany({
+               where:{
+                doct_id:doctorID[i],
+                uniqueRequesterId:uniqueid
+               }
+        })
+        console.log({doctorExpense})
+        // doctorId.push(doctorExpense)
+        return res.status(200).json({
+            erorr:true,
+            success:false,
+            message:"Successfull",
+            data:doctorExpense
+        })
+    }
+    const dateFormat = normalizeDate(searchData)
+    const searchExpense = await prisma.expense_report.findMany({
+        where:{
+            uniqueRequesterId: uniqueid,
+            OR:[
+                {
+                    amount:{
+                        startsWith:searchData
+                    }
+                },{
+                    trip_date:{
+                        startsWith:dateFormat
+                    }
+                }
+            ]
+        }
+    })
+    console.log({searchExpense})
+    return res.status(200).json({
+        error:true,
+        success:false,
+        message:"Successfull",
+        data:searchExpense
+    })
+}
     
     } catch (err) {
         console.log("error-----", err)
@@ -993,6 +1174,9 @@ const get_chemist = async (req, res) => {
         const getData = await prisma.add_chemist.findMany({
             orderBy:{
                 date_time:"desc"
+            },
+            where:{
+                status:"Active"
             }
         })
         console.log({ getData })
@@ -1727,9 +1911,89 @@ const getVisitReport = async(req,res)=>{
     }
 }
 
+//single chemist details
+const singleChemistDetail = async(req,res)=>{
+    try{
+        const{chemistId} = req.body
+        if(chemistId){
+        const singleData = await prisma.add_chemist.findUnique({
+            where:{
+                id:chemistId
+            }
+        })
+        console.log({singleData})
+       return res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfull",
+            data:singleData
+        })
+    }else{
+        return res.status(404).json({
+            error:true,
+            success:false,
+            message:"Chemist Id is required"
+        })
+    }
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
+
+//getting dr visited days
+const visitedDays = async(req,res)=>{
+    try{
+        const{uniqueRequesterId,drId} = req.body
+    
+        const getDate = await prisma.reporting_details.findMany({
+            where:{
+                unique_reqId:uniqueRequesterId,
+                doctor_id:drId
+            },
+            select:{
+                id:true,
+                datetime:true
+            }
+        })
+        const visitedData = []
+        for(i=0; i<getDate.length; i++){
+            const dateData = getDate[i].datetime
+            // console.log({dateData})
+            const extractDate = (dateData) => {
+                const date = new Date(dateData);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0'); 
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${day}-${month}-${year}`;
+              };
+              const dateOnly = extractDate(dateData)
+            //   console.log({dateOnly})
+              visitedData.push({dateOnly})
+        }
+        console.log({visitedData})
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfull",
+            data:visitedData
+        })
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
 
 
-
+ 
 
 
 
@@ -1742,5 +2006,5 @@ module.exports = {
     rep_registration, login, add_doctor, get_addedDoctors, leaveHistory, single_Details, delete_doctor, filter_dr, get_doctorDetail, delete_rep, report_expense,
     individual_expenseReport, add_drAddress, total_repCount, total_drCount, search_Rep, add_chemist, get_chemist, delete_chemist, search_chemist,
     edit_chemist, add_product, delete_product,editProduct, get_product, get_headquarters,travel_plan,get_travelPlan,notifications,searchByDate,search_expenseTable,
-    markAsVisited,getVisitReport
+    markAsVisited,getVisitReport,singleChemistDetail,visitedDays
 }

@@ -4,7 +4,7 @@ const repRouter =express.Router()
 const {rep_registration,login,add_doctor,get_addedDoctors,leaveHistory,single_Details,delete_doctor,filter_dr,get_doctorDetail,delete_rep,report_expense,
     individual_expenseReport,add_drAddress,total_repCount,total_drCount,search_Rep,add_chemist,get_chemist,delete_chemist,search_chemist,
     edit_chemist,add_product,delete_product,editProduct,get_product,get_headquarters,travel_plan,get_travelPlan,notifications,searchByDate,search_expenseTable,
-    markAsVisited,getVisitReport} = require('./rep.controller')
+    markAsVisited,getVisitReport,singleChemistDetail,visitedDays} = require('./rep.controller')
 
 
 repRouter.post('/repRegistration',rep_registration)
@@ -40,6 +40,8 @@ repRouter.post('/search_expenseTable',search_expenseTable)
 repRouter.post('/editProduct',editProduct)
 repRouter.post('/markAsVisited',markAsVisited)
 repRouter.get('/getVisitReport',getVisitReport)
+repRouter.post('/singleChemistDetail',singleChemistDetail)
+repRouter.post('/visitedDays',visitedDays)
 
 
 module.exports = repRouter
