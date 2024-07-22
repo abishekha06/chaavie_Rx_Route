@@ -32,6 +32,8 @@ model rep_details{
   password          String?
   status            String?  
   headquarters      Int?
+  modified_by       Int?
+  modified_date     DateTime?
   // rep_doc_id        doctor_details[]  
   // rep_leave_id      leave_table[]
   // rep_expense_report expense_report[]
@@ -184,4 +186,8 @@ model visit_record{
   date               String?
   dateTime           DateTime?
 }
-
+ 
+ model specialization{
+  id              Int      @id @default(autoincrement())
+  department      String?
+ }

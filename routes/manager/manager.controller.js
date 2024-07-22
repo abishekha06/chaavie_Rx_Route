@@ -54,7 +54,7 @@ const register_manager = async(req,res)=>{
         res.status(200).json({
             error:false,
             success:true,
-            message:"successfull",
+            message:"Successfull",
             data:registration
         })
 
@@ -63,7 +63,7 @@ const register_manager = async(req,res)=>{
         res.status(404).json({
             error:true,
             success:true,
-            message:"internal server error"
+            message:"Internal server error"
         })
     }
 }
@@ -95,7 +95,7 @@ const get_Replist = async(req,res)=>{
         res.status(200).json({
             error:false,
             success:true,
-            message:"successfull",
+            message:"Successfull",
             data:getRep
         })
   
@@ -104,7 +104,7 @@ const get_Replist = async(req,res)=>{
         res.status(400).json({
             error:true,
             success:false,
-            message:"internal server error"
+            message:"Internal server error"
         })
     }
 }
@@ -174,7 +174,7 @@ const leave_request = async(req,res)=>{
         res.status(404).json({
             error:true,
             success:false,
-            message:"internal server error"
+            message:"Internal server error"
         })
     }
 }
@@ -209,7 +209,7 @@ const accept_leaveRequest = async(req,res)=>{
         res.status(404).json({
             error:true,
             success:false,
-            message:"internal server error"
+            message:"Internal server error"
         })
     }
 }
@@ -263,7 +263,7 @@ const getApplide_leaveReuest = async(req,res)=>{
         res.status(200).json({
             error:false,
             success:true,
-            message:"successfull",
+            message:"Successfull",
             data:leaveRequestWithRepdetail
         })
 
@@ -272,7 +272,7 @@ const getApplide_leaveReuest = async(req,res)=>{
         res.status(404).json({
             error:true,
             success:false,
-            message:"internal server error"
+            message:"Internal server error"
         })
     }
 }
@@ -327,7 +327,7 @@ const edit_doctor = async(req,res)=>{
         res.status(404).json({
             error:true,
             success:false,
-            message:"internal server error"
+            message:"Internal server error"
         })
     }
 }
@@ -339,7 +339,7 @@ const list_manager = async(req,res)=>{
         res.status(200).json({
             error:true,
             success:false,
-            message:"successfull",
+            message:"Successfull",
             data:list_manager
         })
     }catch(err){
@@ -347,7 +347,7 @@ const list_manager = async(req,res)=>{
         res.status(404).json({
             error:true,
             success:false,
-            message:"internal server error"
+            message:"Internal server error"
         })
     }
 }
@@ -399,7 +399,7 @@ const list_expenseRequest = async(req,res)=>{
          res.status(200).json({
             error:false,
             success:true,
-            message:"successfull",
+            message:"Successfull",
             data:userDetails
          })
     }catch(err){
@@ -407,7 +407,7 @@ const list_expenseRequest = async(req,res)=>{
         res.status(400).json({
             error:true,
             success:false,
-            message:"internal server error"
+            message:"Internal server error"
         })
     }
 }
@@ -439,7 +439,7 @@ const change_reportStatus = async(req,res)=>{
      res.status(404).json({
         error:true,
         success:false,
-        message:"internal server error"
+        message:"Internal server error"
      })
     }
 }
@@ -479,7 +479,54 @@ const search_Rep_Dr = async(req,res)=>{
         res.status(404).json({
             error:true,
             success:false,
-            message:"internal server error"
+            message:"Internal server error"
+        })
+    }
+}
+
+//edit rep
+const editRep = async(req,res)=>{
+    console.log({req})
+    try{
+        const{repId,name, gender, dob, nationality, mobile, email, designation, qualification, reporting_officer, address, type, password,headquarters,modified_by }=req.body
+        const date = new Date()
+        const editedData = await prisma.rep_details.update({
+            where:{
+                id:repId,
+            },
+            data:{
+                
+                name:name,
+                gender:gender,
+                mobile:mobile,
+                date_of_birth:dob,
+                Nationality:nationality,
+                email:email,
+                designation:designation,
+                qualification:qualification,
+                reporting_officer:reporting_officer,
+                address:address,
+                type:type,
+                password:password,
+                headquarters:headquarters,
+                modified_by:modified_by,
+                modified_date:date
+            }
+        })
+        console.log({editedData})
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfully edited the data",
+            data:editedData
+        })
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"Internal server error"
         })
     }
 }
@@ -491,6 +538,4 @@ const search_Rep_Dr = async(req,res)=>{
 
 
 
-
-
-module.exports = {register_manager,get_Replist,leave_request,accept_leaveRequest,getApplide_leaveReuest,edit_doctor,list_manager,list_expenseRequest,change_reportStatus,search_Rep_Dr}
+module.exports = {register_manager,get_Replist,leave_request,accept_leaveRequest,getApplide_leaveReuest,edit_doctor,list_manager,list_expenseRequest,change_reportStatus,search_Rep_Dr,editRep}
