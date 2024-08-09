@@ -41,34 +41,45 @@ model rep_details{
 }
  model doctor_details{
   id                 Int            @id @default(autoincrement())
-  doc_name           String?
+  firstName          String?
+  lastName           String?
   doc_qualification  String?
   gender             String?
   specialization     String?
   mobile             String?
   no_of_visits       Int?
+  visit_type         String?
   date_of_birth      String?
   wedding_date       String?
-  // address            Json? 
-  products           Json?
-  chemist            Json?
-  created_UId        String?
-  // rep_id             rep_details @relation(fields: [created_by],references: [id])
+  created_UId        String? 
   created_date       DateTime?
   modified_date      DateTime?
   modified_by        String?
   status             String?
   address_id         Json?
+  headquaters        Json?
+  scheduleData       Json?
+  schedule_id        schedule[] 
   addressID         doctor_address[]
 }
 model doctor_address{
   id                  Int            @id @default(autoincrement())
   doc_id              Int
   doc_address_id      doctor_details @relation(fields: [doc_id],references: [id])
-  // longitude           String?
-  // latitude            String?
+  chemist             Json?
+  userId              String?
+  product             Json?
   address             Json?
   created_date        DateTime?
+}
+
+model schedule{
+  id                 Int            @id @default(autoincrement())
+  dr_id              Int
+  scheduleId         doctor_details @relation(fields: [dr_id],references: [id])
+  user_id            String?
+  schedule           Json?
+  createdDate        DateTime
 }
 model leave_table{
   id                Int               @id @default(autoincrement())
@@ -91,6 +102,7 @@ model expense_report{
   // repID              rep_details @relation(fields: [requester_id],references: [id])  
   uniqueRequesterId   String?
   amount             String?
+  // expenseType        String?
   remark             String?
   attachment         String?
   trip_date          String?
@@ -133,6 +145,7 @@ model reporting_details{
   rep_id              Int?
   unique_reqId        String?
   doctor_id           Int?
+  visited_date        String?
   datetime            DateTime
 }
 model manager_details{
@@ -158,22 +171,22 @@ model manager_details{
 model headquarters{
   id                  Int            @id @default(autoincrement())
   // doctor_id           Int?
-  // doc_id              doctor_details @relation(fields: [doctor_id],references: [id])
+  // headquatersId       doctor_details @relation(fields: [id],references: [headquaters])
   headquarter_name    String?
   sub_headquarter     String?
 }
 
-model travel_plan{
-  id                 Int         @id @default(autoincrement())
-  requester_id       String?
-  headquarters_date      Json?
-  // date               String?
-  amount             String?
-  created_date       DateTime?
-  accepted_date      DateTime?
-  accepted_by        String?
-  status             String?
-}
+// model travel_plan{
+//   id                 Int         @id @default(autoincrement())
+//   requester_id       String?
+//   headquarters_date      Json?
+//   // date               String?
+//   amount             String?
+//   created_date       DateTime?
+//   accepted_date      DateTime?
+//   accepted_by        String?
+//   status             String?
+// }
 
 model visit_record{
   id                 Int          @id @default(autoincrement())
@@ -190,4 +203,46 @@ model visit_record{
  model specialization{
   id              Int      @id @default(autoincrement())
   department      String?
+ }
+
+ model travelPlan {
+  id               Int    @id @default(autoincrement())
+  user_id          Int?
+  month            Int?
+  status           String?
+  created_date     DateTime
+  detailedPlan     detailedTravelPlan[]
+ }
+
+ model detailedTravelPlan{
+  id               Int    @id @default(autoincrement())
+  travelplan_id    Int
+  planId           travelPlan @relation(fields: [travelplan_id], references: [id])
+  dr_id            Int?
+  user_id          Int?
+  date             String?
+  status           String?
+  created_date     DateTime
+ }
+
+ model userData{
+  id               Int         @id @default(autoincrement())
+  uniqueId         String?     @unique
+  name             String?
+  gender           String?
+  date_of_birth    String?
+  address          String?
+  mobile           String?
+  email            String?
+  designation      String?
+  nationality      String?
+  qualification    String?
+  headquaters      Json?
+  role             String?
+  password         String?
+  reportingOfficer_id Int?
+  createdBy           Int?
+  adminId             Int?
+  reporting_type      String?
+
  }

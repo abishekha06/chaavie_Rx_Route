@@ -26,10 +26,23 @@ function formatDate(date) {
     }
 return input;
   };
+
+  function categorizeVisitCount(visitCount) {
+    switch (true) {
+        case (visitCount >= 0 && visitCount <= 2):
+            return 'important';
+        case (visitCount >= 3 && visitCount <= 4):
+            return 'core';
+        case (visitCount >= 5 && visitCount <= 6):
+            return 'supercore';
+        default:
+            return 'out of range';
+    }
+}
   
   
 
-//rep registration
+//rep registration(not in use)
 const rep_registration = async (req, res) => {
     console.log({req})
     try {
@@ -106,7 +119,7 @@ const rep_registration = async (req, res) => {
     }
 }
 
-//login 
+//login (in use)
 const login = async (req, res) => {
     try {
         const { userId, password } = req.body
@@ -117,29 +130,14 @@ const login = async (req, res) => {
                 message: "UserId and password are required"
             })
         }
-        let userLogin = []
-        if (userId.startsWith('Mngr')) {
-            userLogin = await prisma.manager_details.findMany({
-                where: {
-                    unique_id: userId,
-                    password: password
-                }
-            })
-        } else if (userId.startsWith('Rep')) {
-            userLogin = await prisma.rep_details.findMany({
-                where: {
-                    unique_id: userId,
-                    password: password
-                }
-            })
-        } else {
-            return res.status(404).json({
-                error: true,
-                success: false,
-                message: "Invalid userid"
-            })
-        }
-        if (userLogin.length === 0) {
+       const findUser = await prisma.userData.findMany({
+            where:{
+                uniqueId:userId,
+                password:password
+            }
+        })
+
+        if (findUser.length === 0) {
             return res.status(401).json({
                 error: true,
                 success: false,
@@ -151,7 +149,7 @@ const login = async (req, res) => {
             error: false,
             success: true,
             message: "Successfully logined",
-            data: userLogin
+            data: findUser
         })
 
     } catch (err) {
@@ -164,113 +162,26 @@ const login = async (req, res) => {
     }
 }
 
-//adding doctors
-// const add_doctor = async (req, res) => {
-//     console.log(req.body.address)
-//     // console.log({req})
-//     try {
-//         const { name, qualification, gender, specialization, mobile, visits, dob, wedding_date, products, chemist, created_UniqueId, latitude, longitude, address } = req.body
-//         const date = new Date()
-//         if (name && qualification && gender && specialization && mobile && visits && dob && wedding_date && products && chemist && created_UniqueId) {
-//             const dr_registration = await prisma.doctor_details.create({
-//                 data: {
-//                     doc_name: name,
-//                     doc_qualification: qualification,
-//                     gender: gender,
-//                     specialization: specialization,
-//                     mobile: mobile,
-//                     no_of_visits: visits,
-//                     date_of_birth: dob,
-//                     wedding_date: wedding_date,
-//                     products: products,
-//                     chemist: chemist,
-//                     created_UId: created_UniqueId,
-//                     created_date: date,
-//                     status: "active"
-//                     // headquarters_id:headquarters_id
-//                 }
-//             })
-//             console.log({ dr_registration })
-//             const doc_id = dr_registration.id
-//             const address_ID = []
-//             const addedAddress = []
-//             for (let i = 0; i < address.length; i++) {
-//                 // const currentAddress = dr_registration[i]
-//                 // console.log({currentAddress})
-//                 const add_drAddress = await prisma.doctor_address.create({
-//                     data: {
-//                         doc_id: doc_id,
-//                         address: address[i],
-//                         // latitude:address.latitude,
-//                         // longitude:address.longitude,
-//                         created_date: date
-//                     }
-//                 })
-//                 console.log({ add_drAddress })
-//                 address_ID.push(add_drAddress.id)
-//                 addedAddress.push(add_drAddress)
-//             }
-
-//             //  const address_id = add_drAddress.id
-//             const add_addressID = await prisma.doctor_details.update({
-//                 where: {
-//                     id: doc_id
-//                 },
-//                 data: {
-//                     address_id: address_ID
-//                 }
-//             })
-//             console.log({ add_addressID })
-//             //adding total visits in visit_record table
-//             const addVisits = await prisma.visit_record.create({
-//                data:{
-//                 requesterUniqueId:created_UniqueId,
-//                 dr_Id:doc_id,
-//                 total_visits:visits
-//                }
-//             })
-//             console.log({addVisits})
-//             res.status(200).json({
-//                 error: true,
-//                 success: false,
-//                 message: "Successfull registered the doctor",
-//                 data: dr_registration,
-//                 addedAddress: addedAddress
-//             })
-//         } else {
-//             return res.status(404).json({
-//                 error: true,
-//                 success: false,
-//                 message: "You have missed some fields"
-//             })
-//         }
-//     } catch (err) {
-//         console.log("error----", err)
-//         res.status(404).json({
-//             error: true,
-//             success: false,
-//             message: "internal server error"
-//         })
-//     }
-// }
+//add doctor(in use)
 const add_doctor = async (req, res) => {
     console.log({req})
     try {
-        const { name, qualification, gender, specialization, mobile, visits, dob, wedding_date, products, chemist, created_UniqueId, latitude, longitude, address } = req.body
+        const { firstName,lastName,qualification, gender, specialization, mobile, visits, dob, wedding_date,created_UniqueId, latitude, longitude, address,chemist,product,headquarters,area,schedule} = req.body
         const date = new Date()
-        if (name && qualification && gender && specialization && mobile && visits && dob && wedding_date && products && chemist && created_UniqueId && address) {
+        if (firstName && lastName && qualification && gender && specialization && mobile && visits  && dob && wedding_date && created_UniqueId && address) {
+            const visitCategory = categorizeVisitCount(visits);
             const dr_registration = await prisma.doctor_details.create({
                 data: {
-                    doc_name: name,
+                    firstName:firstName,
+                    lastName:lastName,
                     doc_qualification: qualification,
                     gender: gender,
                     specialization: specialization,
                     mobile: mobile,
                     no_of_visits: visits,
+                    visit_type:visitCategory,
                     date_of_birth: dob,
                     wedding_date: wedding_date,
-                    products: products,
-                    chemist: chemist,
                     created_UId: created_UniqueId,
                     created_date: date,
                     status: "active"
@@ -278,6 +189,7 @@ const add_doctor = async (req, res) => {
             })
             console.log({ dr_registration })
             const doc_id = dr_registration.id
+            const userId = dr_registration.created_UId
             const address_ID = []
             const addedAddress = []
             for (let i = 0; i < address.length; i++) {
@@ -285,7 +197,10 @@ const add_doctor = async (req, res) => {
                     data: {
                         doc_id: doc_id,
                         address: address[i],
-                        created_date: date
+                        created_date: date,
+                        userId:userId,
+                        chemist:chemist,
+                        product:product
                     }
                 })
                 console.log({ add_drAddress })
@@ -293,12 +208,42 @@ const add_doctor = async (req, res) => {
                 addedAddress.push(add_drAddress)
             }
 
+            //getting the headquaters id
+            const getHeadquaters= await prisma.headquarters.findMany({
+                where:{
+                  headquarter_name:headquarters,
+                  sub_headquarter:area
+                }
+
+            })
+            console.log({getHeadquaters})
+            const headquarterId = getHeadquaters[0].id
+            console.log({headquarterId})
+            //for adding the schedule
+            const scheduleDetails = []
+            const scheduleId = []
+            for(i=0; i<schedule.length;i++){
+            const addSchedule = await prisma.schedule.create({
+                 data:{
+                    dr_id:doc_id,
+                    user_id:userId,
+                    schedule:schedule[i],
+                    createdDate:date
+                 }
+            })
+            console.log(addSchedule)
+            scheduleDetails.push({addSchedule})
+            scheduleId.push(addSchedule.id)
+        }
+
             const add_addressID = await prisma.doctor_details.update({
                 where: {
                     id: doc_id
                 },
                 data: {
-                    address_id: address_ID
+                    address_id: address_ID,
+                    headquaters:headquarterId,
+                    scheduleData:scheduleId 
                 }
             })
             console.log({ add_addressID })
@@ -417,6 +362,9 @@ const add_doctor = async (req, res) => {
 //         })
 //     }
 // }
+//
+
+//get added doctor(in use)
 const get_addedDoctors = async (req, res) => {
     console.log({ req })
     try {
@@ -437,13 +385,7 @@ const get_addedDoctors = async (req, res) => {
         });
         console.log({ getDr });
 
-        // if (getDr.length === 0) {
-        //     return res.status(404).json({
-        //         error: true,
-        //         success: false,
-        //         message: "Invalid unique id, No data found"
-        //     });
-        // }
+        
 
         if (rep_UniqueId.startsWith('Mngr')) {
             const find_mngrDetails = await prisma.manager_details.findMany({
@@ -515,7 +457,7 @@ const get_addedDoctors = async (req, res) => {
 
 
 
-//getting the personal leave history
+//getting the personal leave history(in use)
 const leaveHistory = async (req, res) => {
     try {
         const { uniqueRequesterId } = req.body
@@ -533,6 +475,7 @@ const leaveHistory = async (req, res) => {
             }
         })
         console.log({ find_leaveHistory })
+        
         if (find_leaveHistory.length === 0) {
             return res.status(404).json({
                 error: true,
@@ -540,61 +483,81 @@ const leaveHistory = async (req, res) => {
                 message: "Provided invalid ID"
             })
         }
-        if (uniqueRequesterId.startsWith("Rep")) {
-            const leaveRequestWithRepdetail = []
-            for (let i = 0; i < find_leaveHistory.length; i++) {
-                console.log("jjjjj")
-                const leaveRequest = find_leaveHistory[i]
-                console.log({ leaveRequest })
-                const findRepdata = await prisma.rep_details.findMany({
-                    where: {
-                        unique_id: leaveRequest?.uniqueRequester_Id
-                    }
-                })
-                console.log({ findRepdata })
-                leaveRequestWithRepdetail.push({
-                    ...leaveRequest,
-                    repDetails: findRepdata
-                });
+
+        const userId = find_leaveHistory[0].uniqueRequester_Id
+        console.log({userId})
+
+        //find user details
+        const findUser = await prisma.userData.findMany({
+            where:{
+               uniqueId: userId
             }
-            return res.status(200).json({
-                error: false,
-                success: true,
-                message: "Successfully collected the leave details",
-                data: leaveRequestWithRepdetail
-            })
-        } else {
-            const managerDetails = []
-            for (let i = 0; i < find_leaveHistory.length; i++) {
-                console.log("jjjjj")
-                const leaveRequest = find_leaveHistory[i]
-                console.log({ leaveRequest })
-                const findRepdata = await prisma.manager_details.findMany({
-                    where: {
-                        unique_id: leaveRequest?.uniqueRequester_Id
-                    }
-                })
-                console.log({ findRepdata })
-                managerDetails.push({
-                    ...leaveRequest,
-                    repDetails: findRepdata
-                });
-            }
+        })
+        console.log({findUser})
+
+        
+        // if (uniqueRequesterId.startsWith("Rep")) {
+        //     const leaveRequestWithRepdetail = []
+        //     for (let i = 0; i < find_leaveHistory.length; i++) {
+        //         console.log("jjjjj")
+        //         const leaveRequest = find_leaveHistory[i]
+        //         console.log({ leaveRequest })
+        //         const findRepdata = await prisma.rep_details.findMany({
+        //             where: {
+        //                 unique_id: leaveRequest?.uniqueRequester_Id
+        //             }
+        //         })
+        //         console.log({ findRepdata })
+        //         leaveRequestWithRepdetail.push({
+        //             ...leaveRequest,
+        //             repDetails: findRepdata
+        //         });
+        //     }
+        //     return res.status(200).json({
+        //         error: false,
+        //         success: true,
+        //         message: "Successfully collected the leave details",
+        //         data: leaveRequestWithRepdetail
+        //     })
+        // } else {
+        //     const managerDetails = []
+        //     for (let i = 0; i < find_leaveHistory.length; i++) {
+        //         console.log("jjjjj")
+        //         const leaveRequest = find_leaveHistory[i]
+        //         console.log({ leaveRequest })
+        //         const findRepdata = await prisma.manager_details.findMany({
+        //             where: {
+        //                 unique_id: leaveRequest?.uniqueRequester_Id
+        //             }
+        //         })
+        //         console.log({ findRepdata })
+        //         managerDetails.push({
+        //             ...leaveRequest,
+        //             repDetails: findRepdata
+        //         });
+        //     }
 
 
-            return res.status(200).json({
-                error: false,
-                success: true,
-                message: "Successfully collected the leave details",
-                data: managerDetails
-            })
-        }
-
+        //     return res.status(200).json({
+        //         error: false,
+        //         success: true,
+        //         message: "Successfully collected the leave details",
+        //         data: managerDetails
+        //     })
+        // }
+         
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfull",
+            data:find_leaveHistory,
+            userData:findUser
+        })
 
 
     } catch (err) {
         console.log("error-----", err)
-        res.status(404).status({
+        res.status(404).json({
             error: true,
             success: false,
             message: "Internal server error"
@@ -602,7 +565,7 @@ const leaveHistory = async (req, res) => {
     }
 }
 
-
+//for getting single user details(in use)
 const single_Details = async (req, res) => {
     try {
         const { uniqueId } = req.body
@@ -614,28 +577,35 @@ const single_Details = async (req, res) => {
                 message: "Id required"
             })
         }
-        let userArray = []
-        if (uniqueId.startsWith('Mngr')) {
-            userArray = await prisma.manager_details.findMany({
-                where: {
-                    unique_id: uniqueId
-                }
-            })
-        } else if (uniqueId.startsWith('Rep')) {
-            userArray = await prisma.rep_details.findMany({
-                where: {
-                    unique_id: uniqueId
-                }
-            })
-        } else {
-            return res.status(404).json({
-                error: true,
-                success: false,
-                message: "Invalid Id"
-            })
-        }
+        // let userArray = []
+        // if (uniqueId.startsWith('Mngr')) {
+        //     userArray = await prisma.manager_details.findMany({
+        //         where: {
+        //             unique_id: uniqueId
+        //         }
+        //     })
+        // } else if (uniqueId.startsWith('Rep')) {
+        //     userArray = await prisma.rep_details.findMany({
+        //         where: {
+        //             unique_id: uniqueId
+        //         }
+        //     })
+        // }
 
-        if (userArray.length === 0) {
+        //  else {
+        //     return res.status(404).json({
+        //         error: true,
+        //         success: false,
+        //         message: "Invalid Id"
+        //     })
+        // }
+        const userData = await prisma.userData.findUnique({
+            where:{
+                uniqueId:uniqueId
+            }
+        })
+
+        if (userData.length === 0) {
             return res.status(404).json({
                 error: true,
                 success: false,
@@ -646,7 +616,7 @@ const single_Details = async (req, res) => {
             error: true,
             success: false,
             message: "Successfull",
-            data: userArray
+            data: userData
         })
     } catch (err) {
         console.log("error----", err)
@@ -658,7 +628,7 @@ const single_Details = async (req, res) => {
     }
 }
 
-//for deleting the doctor
+//for deleting the doctor (in use)
 const delete_doctor = async (req, res) => {
     try {
         const { dr_id } = req.body
@@ -737,6 +707,8 @@ const delete_doctor = async (req, res) => {
 //         })
 //     }
 // }
+
+//(in use)
 const filter_dr = async (req, res) => {
     try {
         const { requesterUniqueId, searchData } = req.body;
@@ -791,7 +763,7 @@ const filter_dr = async (req, res) => {
 };
 
 
-//doctor detail
+//doctor detail(in use)
 const get_doctorDetail = async (req, res) => {
     try {
         const { dr_id } = req.body
@@ -852,25 +824,25 @@ const get_doctorDetail = async (req, res) => {
     }
 }
 
-//delete rep
+//delete user (in use)
 const delete_rep = async (req, res) => {
     try {
-        const { rep_id } = req.body
-        const delete_repData = await prisma.rep_details.update({
+        const { userId } = req.body
+        const delete_UserData = await prisma.rep_details.update({
             where: {
-                id: rep_id
+                id: userId
             },
             data: {
                 status: "Inactive"
             }
 
         })
-        console.log({ delete_repData })
+        console.log({ delete_UserData })
         res.status(200).json({
             error: false,
             success: true,
             message: "Successfully deleted the data",
-            data: delete_repData
+            data: delete_UserData
         })
 
     } catch (err) {
@@ -883,7 +855,7 @@ const delete_rep = async (req, res) => {
     }
 }
 
-// report expense request
+// report expense request(in use)
 const report_expense = async (req, res) => {
     try {
         const { amount, remarks, attachment, trip_date, doct_id, requesterId, uniqueRequesterId } = req.body
@@ -904,18 +876,19 @@ const report_expense = async (req, res) => {
         })
         const expense_id = expense_report.id
         //  console.log({expense_id})
-        const repId = expense_report.requester_id
-        //  console.log({repId})
+        const userId = expense_report.requester_id
+         console.log({userId})
 
-        const find_reportingofficer = await prisma.rep_details.findMany({
+        const find_reportingofficer = await prisma.userData.findMany({
             where: {
-                id: repId
+                id: userId
             }
         })
 
-        // console.log({find_reportingofficer})
-        const reporting_officer = find_reportingofficer[0]?.reporting_officer
-        // console.log({reporting_officer})
+        console.log({find_reportingofficer})
+
+        const reporting_officer = find_reportingofficer[0]?.reportingOfficer_id
+        console.log({reporting_officer})
         const add_officerId = await prisma.expense_report.update({
             where: {
                 id: expense_id
@@ -940,7 +913,7 @@ const report_expense = async (req, res) => {
     }
 }
 
-//list expense request
+//list expense request(in use)
 const individual_expenseReport = async (req, res) => {
     console.log({req})
     const { uniqueid,searchData } = req.body
@@ -965,7 +938,7 @@ const individual_expenseReport = async (req, res) => {
                 },
                 select:{
                     id:true,
-                    doc_name:true
+                    firstName:true
                 }
             }) 
             // console.log({drDetails})
@@ -975,55 +948,71 @@ const individual_expenseReport = async (req, res) => {
             })
         }
         //find rep_details
-        if(uniqueid.startsWith('Rep')){
-        const rep_details = await prisma.rep_details.findMany({
-            where:{
-                unique_id:uniqueid
-            }
-        })
-       return res.status(200).json({
-            error: false,
-            success: true,
-            message: "Successfull",
-            data: completeExpenseData,
-            rep_details:rep_details
-        })
-    }else{
+    //     if(uniqueid.startsWith('Rep')){
+    //     const rep_details = await prisma.rep_details.findMany({
+    //         where:{
+    //             unique_id:uniqueid
+    //         }
+    //     })
+    //    return res.status(200).json({
+    //         error: false,
+    //         success: true,
+    //         message: "Successfull",
+    //         data: completeExpenseData,
+    //         rep_details:rep_details
+    //     })
+    // }else{
 
-        const managerDetails = await prisma.manager_details.findMany({
-            where:{
-                unique_id:uniqueid
-            }
-        })
-       return res.status(200).json({
-            error: false,
-            success: true,
-            message: "Successfull",
-            data: completeExpenseData,
-            managerDetails:managerDetails
-        })
-    }
-}else{
+    //     const managerDetails = await prisma.manager_details.findMany({
+    //         where:{
+    //             unique_id:uniqueid
+    //         }
+    //     })
+    //    return res.status(200).json({
+    //         error: false,
+    //         success: true,
+    //         message: "Successfull",
+    //         data: completeExpenseData,
+    //         managerDetails:managerDetails
+    //     })
+    // }
+    
+
+    //find userDetails(in use)
+    const findUser = await prisma.userData.findMany({
+        where:{
+            uniqueId:uniqueid
+        }
+    })
+    console.log({findUser})
+    return res.status(200).json({
+        error:false,
+        success:true,
+        message:"Successfull",
+        data: completeExpenseData,
+        userDetails:findUser
+    })
+}else{ 
     const findDr = await prisma.doctor_details.findMany({
         where:{
             created_UId:uniqueid,
-           
-            doc_name:{
+            
+            firstName:{
                 startsWith:searchData,
                 mode:"insensitive"
             }
         },
         select:{
             id:true,
-            doc_name:true
+            firstName:true
         }
     })
-    // console.log({findDr})
+    console.log({findDr})
     
     
     for( let i=0; i<findDr.length ; i++){
         const doctorID = findDr[i].id
-        const dr_name = findDr[i].doc_name
+        const dr_name = findDr[i].firstName
         const doctorDetails = []
         // console.log({doctorID} )
         const doctorExpense = await prisma.expense_report.findMany({
@@ -1035,7 +1024,7 @@ const individual_expenseReport = async (req, res) => {
         console.log({doctorExpense})
         const expenseWithDrName = doctorExpense.map(expense=>({
             ...expense,
-            dr_name:dr_name
+            firstName:dr_name
         }))
         // doctorDetails.push({
         //     doctorExpense:doctorExpense,
@@ -1065,11 +1054,12 @@ const individual_expenseReport = async (req, res) => {
             ]
         }
     })
-    // console.log({searchExpense})
+    console.log({searchExpense})
     return res.status(200).json({
         error:true,
         success:false,
         message:"Successfull",
+        // findDr:findDr,
         data:searchExpense
     })
 }
@@ -1085,10 +1075,10 @@ const individual_expenseReport = async (req, res) => {
 
 }
 
-//to add address of doctor
+//to add address of doctor(in use)
 const add_drAddress = async (req, res) => {
     try {
-        const { dr_id, dr_address, latitude, longitude } = req.body
+        const { dr_id, dr_address, latitude, longitude,userId } = req.body
         const date = new Date()
         const add_address = await prisma.doctor_address.create({
             data: {
@@ -1096,7 +1086,8 @@ const add_drAddress = async (req, res) => {
                 address: dr_address,
                 latitude: latitude,
                 longitude: longitude,
-                created_date: date
+                created_date: date,
+                userId:userId
             }
         })
         console.log({ add_address })
@@ -1129,10 +1120,16 @@ const add_drAddress = async (req, res) => {
 //     }
 // }
 
-//total number of rep
+//total number of rep (in use)
 const total_repCount = async (req, res) => {
     try {
-        const get_count = await prisma.rep_details.count()
+        const{userid} = req.body
+        const get_count = await prisma.userData.count({
+            where:{
+                createdBy:userid,
+                role:"Rep"
+            }
+        })
         const lastestDate = await prisma.rep_details.findFirst({
             orderBy: {
                 created_date: "desc"
@@ -1160,10 +1157,15 @@ const total_repCount = async (req, res) => {
     }
 }
 
-//total doctor count
+//total doctor count(in use)
 const total_drCount = async (req, res) => {
     try {
-        const get_count = await prisma.doctor_details.count()
+        const{createdBy} = req.body //unique id of the doctor should be passed
+        const get_count = await prisma.doctor_details.count({
+            where:{
+                created_UId:createdBy
+            }
+        })
         const lastestDate = await prisma.doctor_details.findFirst({
             orderBy: {
                 created_date: "desc"
@@ -1191,13 +1193,13 @@ const total_drCount = async (req, res) => {
     }
 }
 
-//api for searching the rep
+//api for searching the rep(in use)
 const search_Rep = async (req, res) => {
     try {
         const {created_by,searchName } = req.body
-        const search_data = await prisma.rep_details.findMany({
+        const search_data = await prisma.userData.findMany({
             where: {
-                created_by:created_by,
+                createdBy:created_by,
                 name: {
                     startsWith: searchName,
                     mode:"insensitive"
@@ -1222,7 +1224,7 @@ const search_Rep = async (req, res) => {
 }
 
 
-//add chemist
+//add chemist(in use)
 const add_chemist = async (req, res) => {
     try {
         const { created_by, building_name, mobile, email, lisence_no, address, date_of_birth, uniqueId } = req.body
@@ -1260,7 +1262,7 @@ const add_chemist = async (req, res) => {
     }
 }
 
-//get chemist
+//get chemist(in use)
 const get_chemist = async (req, res) => {
     try {
         // const { uniqueId } = req.body
@@ -1290,7 +1292,7 @@ const get_chemist = async (req, res) => {
     }
 }
 
-//delete chemist
+//delete chemist (in use)
 const delete_chemist = async (req, res) => {
     try {
         const { chemist_id } = req.body
@@ -1321,7 +1323,7 @@ const delete_chemist = async (req, res) => {
     }
 }
 
-//search chemist
+//search chemist(in use)
 const search_chemist = async (req, res) => {
     const { searchData } = req.body
     try {
@@ -1368,7 +1370,7 @@ const search_chemist = async (req, res) => {
     }
 }
 
-//edit chemist
+//edit chemist(in use)
 const edit_chemist = async (req, res) => {
     try {
         const { chemist_id, building_name, mobile, email, lisence_no, address, date_of_birth } = req.body
@@ -1408,10 +1410,11 @@ const edit_chemist = async (req, res) => {
     }
 }
 
-//add product
+//add product(in use)
 const add_product = async (req, res) => {
     try {
         const { created_by, productName, quantity } = req.body
+    
         const added_product = await prisma.add_product.create({
             data: {
                 created_by: created_by,
@@ -1437,7 +1440,7 @@ const add_product = async (req, res) => {
     }
 }
 
-//delete product
+//delete product(in use)
 const delete_product = async (req, res) => {
     try {
         const { productId } = req.body
@@ -1475,7 +1478,7 @@ const delete_product = async (req, res) => {
 }
 
 
-//get product
+//get product(in use)
 const get_product = async (req, res) => {
     try {
         // const{creater_id} = req.body
@@ -1501,7 +1504,7 @@ const get_product = async (req, res) => {
     }
 }
 
-//edit product
+//edit product(in use)
  const editProduct = async(req,res)=>{
     try{
         const{productId,productName} = req.body
@@ -1529,7 +1532,7 @@ const get_product = async (req, res) => {
     }
  }
 
-//get headquarters
+//get headquarters(in use)
 const get_headquarters = async (req, res) => {
     try {
         const all_data = await prisma.headquarters.findMany()
@@ -1551,79 +1554,81 @@ const get_headquarters = async (req, res) => {
     }
 }
 
-const travel_plan = async(req,res)=>{
-    try{
-        const {requester_id,date_headquarters}=req.body
-        const travel_planData =[] 
-        for(let i=0; i<date_headquarters.length ; i++){
+// const travel_plan = async(req,res)=>{
+//     try{
+//         const {requester_id,date_headquarters}=req.body
+//         const travel_planData =[] 
+//         for(let i=0; i<date_headquarters.length ; i++){
        
-        const date = new Date()
-        const add_travelPlan = await prisma.travel_plan.create({
-          data:{
-            requester_id:requester_id,
-            headquarters_date:date_headquarters[i],
-            created_date:date,
-            status:"Pending"
-          }
-        })
+//         const date = new Date()
+//         const add_travelPlan = await prisma.travel_plan.create({
+//           data:{
+//             requester_id:requester_id,
+//             headquarters_date:date_headquarters[i],
+//             created_date:date,
+//             status:"Pending"
+//           }
+//         })
 
-        console.log(add_travelPlan)
-        travel_planData.push(add_travelPlan)
-    }
-    res.status(200).json({
-        error:false,
-        success:true,
-        message:"Successfull",
-        data:travel_planData
-    })
+//         console.log(add_travelPlan)
+//         travel_planData.push(add_travelPlan)
+//     }
+//     res.status(200).json({
+//         error:false,
+//         success:true,
+//         message:"Successfull",
+//         data:travel_planData
+//     })
 
-    }catch(err){
-        console.log("error---",err)
-        res.status(404).json({
-            error:true,
-            success:false,
-            message:"Internal server error"
-        })
-    }
-}
+//     }catch(err){
+//         console.log("error---",err)
+//         res.status(404).json({
+//             error:true,
+//             success:false,
+//             message:"Internal server error"
+//         })
+//     }
+// }
 
 //get travel_plan
-const get_travelPlan = async(req,res)=>{
-    try{
-        const{requesterId} = req.body
-        if(!requesterId){
-            return res.status(404).json({
-                error:true,
-                success:false,
-                message:"Requester id is required"
-            })
-        }
-         const get_plan = await prisma.travel_plan.findMany({
-            where:{
-                requester_id:requesterId,
-                // status:"Pending"
-            }
-         })
-         console.log({get_plan})
-         res.status(200).json({
-            error:false,
-            success:true,
-            message:"Successfull",
-            data:get_plan
-        })
+// const get_travelPlan = async(req,res)=>{
+//     try{
+//         const{requesterId} = req.body
+//         if(!requesterId){
+//             return res.status(404).json({
+//                 error:true,
+//                 success:false,
+//                 message:"Requester id is required"
+//             })
+//         }
+//          const get_plan = await prisma.travel_plan.findMany({
+//             where:{
+//                 requester_id:requesterId,
+//                 // status:"Pending"
+//             }
+//          })
+//          console.log({get_plan})
+//          res.status(200).json({
+//             error:false,
+//             success:true,
+//             message:"Successfull",
+//             data:get_plan
+//         })
     
-    }catch(err){
-        console.log("error---",err)
-        res.status(404).json({
-            error:true,
-            success:false,
-            message:"Internal server error"
-        })
-    }
-}
+//     }catch(err){
+//         console.log("error---",err)
+//         res.status(404).json({
+//             error:true,
+//             success:false,
+//             message:"Internal server error"
+//         })
+//     }
+// }
 
 
 //getting birthday and anniversary notifications
+
+//for getting event notification(in use)
 const notifications = async(req,res)=>{
     try{
         const{requesterUniqueId} = req.body
@@ -1705,7 +1710,7 @@ const notifications = async(req,res)=>{
     }
 }
 
-//search in leave balance table 
+//search in leave table(in use) 
 const searchByDate = async(req,res)=>{
     try{
         const{user_uniqueId,date} = req.body
@@ -1762,7 +1767,7 @@ const searchByDate = async(req,res)=>{
     }
 }
 
-//search in expense table
+//search in expense table(in use)
 const search_expenseTable = async(req,res)=>{
     try{
         const {user_uniqueID,searchdata} = req.body
@@ -1849,7 +1854,7 @@ const search_expenseTable = async(req,res)=>{
     }
 }
 
-//mark as visited
+//mark as visited(in use)
 const markAsVisited = async(req,res)=>{
     try{
         const{reporterUniqueId,reporterId,date,time,products,remark,doctorId} = req.body
@@ -1857,7 +1862,7 @@ const markAsVisited = async(req,res)=>{
        
 
         const visiteddate = new Date()
-        // date.setDate(tomorrow.getDate() + 1);
+        
         const formatteddate = formatnewDate(visiteddate);
         console.log({formatteddate})
         
@@ -1866,33 +1871,26 @@ const markAsVisited = async(req,res)=>{
                 unique_reqId:reporterUniqueId,
                 date:date,
                 time:time,
-                products:products,
+                products:products,  
                 remarks:remark,
                 rep_id:reporterId,
                 doctor_id:doctorId,
-                datetime:currentDate
+                datetime:currentDate,
+                visited_date:formatteddate
              }
         })
         console.log({markVisited})
-        const markedDate = markVisited.datetime
+        const markedDate = markVisited.visited_date
         console.log({markedDate})
-        const dateOnly = markedDate.toLocaleDateString(); 
-        console.log({dateOnly});
+        // const dateOnly = markedDate.toLocaleDateString(); 
+        // console.log({dateOnly});
     
-
-
+        
+       
         const visitedId = markVisited.id
+        console.log({visitedId})
         let visitReport
         if(date && time){
-            visitReport = await prisma.reporting_details.update({
-                where:{
-                    id:visitedId
-                },
-                data:{
-                    reporting_type:"Online Reporting"
-                }
-            })
-        }else{
             visitReport = await prisma.reporting_details.update({
                 where:{
                     id:visitedId
@@ -1901,10 +1899,21 @@ const markAsVisited = async(req,res)=>{
                     reporting_type:"Offline Reporting"
                 }
             })
+        }else{
+            visitReport = await prisma.reporting_details.update({
+                where:{
+                    id:visitedId
+                },
+                data:{
+                    reporting_type:"Online Reporting"
+                }
+            })
         }
         console.log({visitReport})
         //get the datetime from the response
-        const markeddate = new Date(markVisited.datetime)
+        // const markeddate = new Date(markVisited.datetime)
+        // console.log({markeddate})
+        const markeddate = markVisited.visited_date
         console.log({markeddate})
       
         //for getting the count of lines
@@ -1912,12 +1921,12 @@ const markAsVisited = async(req,res)=>{
             where:{
                 unique_reqId:reporterUniqueId,
                 doctor_id:doctorId,
-                datetime:markeddate
+                visited_date:markeddate
             }
         })
         console.log({countVisits})
         //getting the number of visits of doctor
-        const getVisitReport = await prisma.doctor_details.findFirst({
+        let getVisitReport = await prisma.doctor_details.findFirst({
             where:{
                 created_UId:reporterUniqueId,
                 id:doctorId
@@ -1926,32 +1935,38 @@ const markAsVisited = async(req,res)=>{
                 no_of_visits:true
             }
         })
+     
         console.log({getVisitReport})
-
+        
         const visitCount = getVisitReport.no_of_visits
-
+         console.log({visitCount})
         //calculating the balance visits
         const balanceVisit = visitCount-countVisits
         console.log({balanceVisit})
         // finding the line which should get update 
         const findVisitRecord = await prisma.visit_record.findFirst({
-            where:{
-                requesterUniqueId:reporterUniqueId,
-                dr_Id:doctorId
-            }
+        where:{
+            requesterUniqueId:reporterUniqueId,
+            dr_Id:doctorId
+        }
         })
-
+// 
+    
         console.log({findVisitRecord})
         const visitID = findVisitRecord.id
-        // console.log({visitID})
+        console.log({visitID})
         const visitDate = findVisitRecord.date
-        // console.log({visitDate})
+        console.log({visitDate})
         const dateTime = findVisitRecord.dateTime
         console.log({dateTime})
         const requester_id = findVisitRecord.requesterId
+        console.log({requester_id})
         const requesterUniqueId = findVisitRecord.requesterUniqueId
+        console.log({requesterUniqueId})
         const drId = findVisitRecord.dr_Id
+        console.log({drId})
         const total_visits=findVisitRecord.total_visits
+        console.log({total_visits})
 
         if(!findVisitRecord){
             return res.status(404).json({
@@ -1985,6 +2000,7 @@ const markAsVisited = async(req,res)=>{
             })
           }
            const currentMonth = currentDate.getMonth() + 1  ;
+           console.log({currentMonth})
            const findexistingVisit = await prisma.visit_record.findMany({
             where:{
                 id:visitID
@@ -1994,18 +2010,32 @@ const markAsVisited = async(req,res)=>{
             }
            })
            console.log({findexistingVisit})
+           let theDate=''
+           theDate=findexistingVisit[findexistingVisit.length-1].date;
+           console.log({theDate})
+           const getMonthFromDate = (dateString) => {
+            const dateParts = dateString.split('-');
+            return parseInt(dateParts[1], 10);
+        };
+        
+      
+        theDate= getMonthFromDate(theDate);
+        console.log(theDate); // Output: 7
+
+        
+           console.log({findexistingVisit})
            if(findexistingVisit.length>0){
-            const existingDate = findexistingVisit[0].date;
+            // const existingDate = findexistingVisit[0].date;
          
-            console.log({ existingDate });
-            console.log({currentMonth})
+            // console.log({ existingDate });
+            // console.log({currentMonth})
 
-            const [day,month,year] = existingDate.split('-')
-            const existingDates = new Date(`${year}-${month}-${day}`);
-            const existingmonth = existingDates.getMonth() + 1
-            console.log({existingmonth})
+            // const [day,month,year] = existingDate.split('-')
+            // const existingDates = new Date(`${year}-${month}-${day}`);
+            // const existingmonth = existingDates.getMonth() + 1
+            // console.log({existingmonth})
 
-            if(currentMonth !== existingmonth){
+            if(currentMonth !== theDate){
                 const addNewDate = await prisma.visit_record.create({
                     data:{
                         // id:visitID,
@@ -2015,13 +2045,20 @@ const markAsVisited = async(req,res)=>{
                         requesterUniqueId:requesterUniqueId,
                         dr_Id:drId,
                         total_visits:total_visits,
-                        visited:countVisits,
+                        visited:1,
                         balance_visit:balanceVisit
                     }
                 })
                 console.log({addNewDate})
+                return res.status(200).json({
+                    error:false,
+                    success:true,
+                    message:"Successfull",
+                    data:addNewDate,
+                    updateVisit:addNewDate
+                })
             }
-           }
+           
           
           
         
@@ -2037,14 +2074,16 @@ const markAsVisited = async(req,res)=>{
             }
         })
         console.log({updateVisit})  
-        res.status(200).json({
+       return res.status(200).json({
             error:false,
             success:true,
             message:"Successfull",
             data:visitReport,
             updateVisit:updateVisit
         })
+ 
     }
+}
     }catch(err){
         console.log({err})
         res.status(404).json({
@@ -2055,7 +2094,7 @@ const markAsVisited = async(req,res)=>{
     }
 }
 
-//get visit report
+//get visit report(in use)
 const getVisitReport = async(req,res)=>{
     try{
         const visitReport = await prisma.reporting_details.findMany()
@@ -2107,7 +2146,7 @@ const getVisitReport = async(req,res)=>{
     }
 }
 
-//single chemist details
+//single chemist details(in use)
 const singleChemistDetail = async(req,res)=>{
     try{
         const{chemistId} = req.body
@@ -2141,7 +2180,7 @@ const singleChemistDetail = async(req,res)=>{
     }
 }
 
-//getting dr visited days
+//getting dr visited days(in use)
 const visitedDays = async(req,res)=>{
     try{
         const{uniqueRequesterId,drId} = req.body
@@ -2189,7 +2228,7 @@ const visitedDays = async(req,res)=>{
 }
 
 
-
+//for getting specialization(in use)
 const getSpecialization = async(req,res)=>{
     try{
         const getSpec = await prisma.specialization.findMany()
@@ -2209,7 +2248,7 @@ const getSpecialization = async(req,res)=>{
       })
     }
 }
-
+// for getting doctor visited days(in use)
 const getVisitedDates = async(req,res)=>{
     try{
         const{requesterUniqueId,docId} = req.body
@@ -2241,7 +2280,7 @@ const getVisitedDates = async(req,res)=>{
     }
 }
 
-//getting dr address
+//getting dr address (in use)
 const getDoctorAddress = async(req,res)=>{
     try{
         const {drId} = req.body
@@ -2330,12 +2369,230 @@ const visitedDetailsByMonth = async(req,res)=>{
     }
 }
 
+//create travelPlan
+const createTravelplan = async(req,res)=>{
+    try{
+        const{user_id,plan} = req.body
+        console.log("req---",req.body)
+        const createdDate = new Date()
+
+        const getDate = plan[0].date
+        console.log({getDate})
+
+        const [day,month,year] = getDate.split('-')
+        const findMonth = new Date(`${month}-${day}-${year}`);
+        const Month = findMonth.getMonth() + 1
+        console.log({Month})
 
 
+        const createPlan = await prisma.travelPlan.create({
+                    data:{
+                      user_id:user_id,
+                      created_date:createdDate,
+                      month:Month,
+                      status:"Draft"
+                    }
+        })
+        console.log({createPlan})
+    
+        const travelPlanid = createPlan.id
+        console.log({travelPlanid})
+        let createdPlan = []
+        let doctorId = []
+        for(let i=0 ; i<plan.length ;i++){
+            const date = plan[i].date
+            console.log({date})
+            const doctors = plan[i].doctors 
+            console.log({doctors})
+            
+            for(let i=0; i<doctors.length; i++){
+                const dr_id = doctors[i]
+                doctorId.push(dr_id)
+            const createDetailedPlan = await prisma.detailedTravelPlan.create({
+                data:{
+                    travelplan_id:travelPlanid,
+                    dr_id:doctors[i],
+                    user_id:user_id,
+                    date:date,
+                    status:"Draft",
+                    created_date:createdDate
+                }
+            })
+
+            console.log({createDetailedPlan})
+            createdPlan.push(createDetailedPlan)
+
+            }
+        }
+
+        const countDrId = {}
+        doctorId.forEach(id=>{
+            if(countDrId[id]){
+                countDrId[id]++;
+            }else{
+                countDrId[id] = 1
+            }
+        })
+        console.log({countDrId})
+        const totalVisits = []
+        totalVisits.push(countDrId)
+        console.log({totalVisits})
+        
+        const visitCount = []
+        const uniqueId = new Set()
+        for(let i=0; i<doctorId.length; i++){
+            const drId = doctorId[i]
+            if(!uniqueId.has(drId)){
+            const findVisitCount = await prisma.doctor_details.findMany({
+                where:{
+                    id:drId
+                },
+                select:{
+                    id:true,
+                    // doc_name:true,
+                    no_of_visits:true
+                }
+            })
+            console.log({findVisitCount})
+            visitCount.push(findVisitCount)
+            uniqueId.add(drId)
+        }
+        }
+       
+
+        
+  // Convert visitCount to a dictionary for easy lookup
+//   const visitCountDict = visitCount.reduce((acc, { id, no_of_visits }) => {
+//     acc[id] = no_of_visits;
+//     return acc;
+// }, {});
+
+// Calculate missed visits
+// const missedVisits = {};
+// for (const [drId, plannedVisits] of Object.entries(countDrId)) {
+//     const recordedVisits = visitCountDict[drId] || 0;
+//     const missed = plannedVisits - recordedVisits;
+//     if (missed > 0) {
+//         missedVisits[drId] = missed;
+//     }
+// }
+
+
+
+     res.status(200).json({
+        error:true,
+        success:false,
+        message:"Successfull",
+        data:createPlan,
+        createdPlan:createdPlan,
+        dr_id:doctorId,
+        countDrId:countDrId,
+        visitCount:visitCount,
+        totalVisits:totalVisits
+        // missedVisits: missedVisits
+     })
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
+
+
+//getting the travelPlan
+const getTravelPlan = async(req,res)=>{
+    try{
+        const{travelPlanId} = req.body
+        const getDetails = await prisma.detailedTravelPlan.findMany({
+            where:{
+                travelplan_id:travelPlanId
+            }
+        })
+        //find dr name
+        // const drName = []
+        for(let i=0; i<getDetails.length; i++){
+            const findDr = await prisma.doctor_details.findMany({
+                where:{
+                    id:getDetails[i].dr_id
+                },
+                select:{
+                    id:true,
+                    firstName:true,
+                    lastName:true
+                }
+            })
+            console.log({findDr})
+            getDetails[i] = {
+                ...getDetails[i],
+                drDetails: findDr
+            };
+        }
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfull",
+            data:getDetails
+        })
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"Internal server error",
+            data:Successfull
+        })
+    }
+}
+
+//change status for travelPlan
+const changeStatus = async(req,res)=>{
+    try{
+        const{tripId} = req.body
+        const changeTripStatus = await prisma.travelPlan.update({
+            where:{
+                id:tripId
+                // status:"Draft"
+            },
+            data:{
+                status:"Submitted"
+            }
+        })
+        const changeStatus = await prisma.detailedTravelPlan.updateMany({
+            where:{
+                travelplan_id:tripId
+                // status:"Draft"
+            },
+            data:{
+                status:"Submitted"
+            }
+        })
+
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfull",
+            changeTripStatus:changeTripStatus,
+            changeStatus:changeStatus
+        })
+
+    }catch(err){
+        console.log({err})
+        res.status(400).json({
+            error:true,
+            success:false,
+            message:"Internal server error"
+        })
+    }
+}
 
 module.exports = {
     rep_registration, login, add_doctor, get_addedDoctors, leaveHistory, single_Details, delete_doctor, filter_dr, get_doctorDetail, delete_rep, report_expense,
     individual_expenseReport, add_drAddress, total_repCount, total_drCount, search_Rep, add_chemist, get_chemist, delete_chemist, search_chemist,
-    edit_chemist, add_product, delete_product,editProduct, get_product, get_headquarters,travel_plan,get_travelPlan,notifications,searchByDate,search_expenseTable,
-    markAsVisited,getVisitReport,singleChemistDetail,visitedDays,getSpecialization,getVisitedDates,getDoctorAddress,checkLocation,visitedDetailsByMonth
+    edit_chemist, add_product, delete_product,editProduct, get_product, get_headquarters,notifications,searchByDate,search_expenseTable,
+    markAsVisited,getVisitReport,singleChemistDetail,visitedDays,getSpecialization,getVisitedDates,getDoctorAddress,checkLocation,visitedDetailsByMonth,createTravelplan,
+    getTravelPlan,changeStatus
 }

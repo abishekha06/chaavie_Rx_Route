@@ -3,8 +3,9 @@ const repRouter =express.Router()
 
 const {rep_registration,login,add_doctor,get_addedDoctors,leaveHistory,single_Details,delete_doctor,filter_dr,get_doctorDetail,delete_rep,report_expense,
     individual_expenseReport,add_drAddress,total_repCount,total_drCount,search_Rep,add_chemist,get_chemist,delete_chemist,search_chemist,
-    edit_chemist,add_product,delete_product,editProduct,get_product,get_headquarters,travel_plan,get_travelPlan,notifications,searchByDate,search_expenseTable,
-    markAsVisited,getVisitReport,singleChemistDetail,visitedDays,getSpecialization,getVisitedDates,getDoctorAddress,checkLocation,visitedDetailsByMonth} = require('./rep.controller')
+    edit_chemist,add_product,delete_product,editProduct,get_product,get_headquarters,notifications,searchByDate,search_expenseTable,
+    markAsVisited,getVisitReport,singleChemistDetail,visitedDays,getSpecialization,getVisitedDates,getDoctorAddress,checkLocation,visitedDetailsByMonth,createTravelplan,
+    getTravelPlan,changeStatus} = require('./rep.controller')
 
 
 repRouter.post('/repRegistration',rep_registration)
@@ -20,8 +21,8 @@ repRouter.post('/delete_rep',delete_rep)
 repRouter.post('/report_expense',report_expense)
 repRouter.post('/repExpense_list',individual_expenseReport)
 repRouter.post('/adding_drAddress',add_drAddress)
-repRouter.get('/totalRep',total_repCount)
-repRouter.get('/totalDr',total_drCount)
+repRouter.post('/totalRep',total_repCount)
+repRouter.post('/totalDr',total_drCount)
 repRouter.post('/search_Rep',search_Rep)
 repRouter.post('/add_chemist',add_chemist)
 repRouter.get('/get_chemist',get_chemist)
@@ -31,9 +32,9 @@ repRouter.post('/edit_chemist',edit_chemist)
 repRouter.post('/add_product',add_product)
 repRouter.post('/delete_product',delete_product)
 repRouter.get('/get_product',get_product)
-repRouter.post('/travel_plan',travel_plan)
+// repRouter.post('/travel_plan',travel_plan)
 repRouter.get('/get_headquarters',get_headquarters)
-repRouter.post('/get_travelPlan',get_travelPlan)
+// repRouter.post('/get_travelPlan',get_travelPlan)
 repRouter.post('/notifications',notifications)
 repRouter.post('/searchByDate',searchByDate)
 repRouter.post('/search_expenseTable',search_expenseTable)
@@ -47,5 +48,8 @@ repRouter.post('/getVisitedDates',getVisitedDates)
 repRouter.post('/getDoctorAddress',getDoctorAddress)
 repRouter.post('/checkLocation',checkLocation)
 repRouter.post('/visitedDetailsByMonth',visitedDetailsByMonth)
+repRouter.post('/createTravelplan',createTravelplan)
+repRouter.post('/getTravelPlan',getTravelPlan)
+repRouter.post('/changeStatus',changeStatus)
 
 module.exports = repRouter

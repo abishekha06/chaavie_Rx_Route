@@ -2,7 +2,7 @@ const express = require('express')
 const managerRouter =express.Router()
 
 const{register_manager,get_Replist,leave_request,accept_leaveRequest,getApplide_leaveReuest,edit_doctor,list_manager,list_expenseRequest,
-    change_reportStatus,search_Rep_Dr,editRep
+    change_reportStatus,search_Rep_Dr,editRep,markVisit
 }=require('./manager.controller')
 
 
@@ -18,6 +18,7 @@ managerRouter.post('/list_expenseRequest',list_expenseRequest)
 managerRouter.post('/change_reportStatus',change_reportStatus)
 managerRouter.post('/search',search_Rep_Dr)
 managerRouter.post('/editRep',editRep)
+managerRouter.post('/markVisit',markVisit)
 
 
 

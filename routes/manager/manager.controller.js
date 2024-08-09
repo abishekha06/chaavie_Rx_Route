@@ -2,6 +2,14 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 
+function formatnewDate(date) {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
+
 //manager registration
 const register_manager = async(req,res)=>{
     try{
@@ -531,6 +539,189 @@ const editRep = async(req,res)=>{
     }
 }
 
+//markasvisited
+const markVisit = async(req,res)=>{
+    try{
+        const{reporterUniqueId,reporterId,date,time,products,remark,doctorId} = req.body
+        const visiteddate = new Date()
+        const formatteddate = formatnewDate(visiteddate);
+        // console.log({formatteddate})
+        const currentDate = new Date()
+        // console.log({currentDate})
+
+        const reportVisit = await prisma.reporting_details.create({
+            data:{
+                unique_reqId:reporterUniqueId,
+                date:date,
+                time:time,
+                products:products,  
+                remarks:remark,
+                rep_id:reporterId,
+                doctor_id:doctorId,
+                datetime:currentDate,
+                visited_date:formatteddate
+            }
+        })
+        // console.log({reportVisit})
+        const reportId = reportVisit.id
+        let updateReportingType ;
+        console.log({reportId})
+        if(date && time){
+             updateReportingType = await prisma.reporting_details.update({
+                where:{
+                    id:reportId
+                },
+                data:{
+                    reporting_type:"Offline Reporting"
+                }
+             })
+        }else{
+            updateReportingType = await prisma.reporting_details.update({
+                where:{
+                    id:reportId
+                },
+                data:{
+                    reporting_type:"Spot Reporting"
+                }
+            })
+        }
+        console.log({updateReportingType})
+
+        const reportedDate = updateReportingType.visited_date
+        // console.log({reportedDate})
+
+        const requesterId = updateReportingType.rep_id
+        // console.log({requesterId})
+
+        const drId = updateReportingType.doctor_id
+        // console.log({drId})
+
+        const unique_reqId = updateReportingType.unique_reqId
+        // console.log({unique_reqId})
+
+        // get the existing detail of currentmonth
+        const [day,month,year] = formatteddate.split('-')
+        const findCurrentMonth = new Date(`${year}-${month}-${day}`);
+        const CurrentMonth = findCurrentMonth.getMonth() + 1
+        console.log({CurrentMonth})
+
+        //count the number of reports in the reporting table
+        const findReportCount = await prisma.reporting_details.count({
+            where:{
+                unique_reqId:reporterUniqueId,
+                doctor_id:doctorId,
+                AND:[
+                    {
+                        visited_date: {
+                            contains: `-${String(CurrentMonth).padStart(2, '0')}-`
+                        }
+                    }
+                ]
+            }
+        })
+        console.log({findReportCount})
+
+        //find the row to update the data
+        const findUpdatingRow = await prisma.visit_record.findMany({
+            where:{
+                requesterUniqueId:reporterUniqueId,
+                dr_Id:doctorId
+            }
+        })
+        console.log({findUpdatingRow})
+        
+        //find the id of the row which should be updated
+        const updatingRowId = findUpdatingRow[0].id
+        // console.log({updatingRowId})
+
+        //no of visits
+        const numOfVisits = findUpdatingRow[0].total_visits
+        // console.log({numOfVisits})
+
+        //need to calculate the no of balance visits
+        const balanceVisits = numOfVisits - findReportCount
+        // console.log({balanceVisits})
+        if(balanceVisits < 0){
+            return res.status(404).json({
+                error:true,
+                success:false,
+                message:"No more balance visit found"
+            })
+        }else{
+        
+        //update the visited count and balance visit in the visit report
+        const updateDate = await prisma.visit_record.update({
+            
+                where:{
+                    id:updatingRowId
+                },
+                data:{
+                    date:reportedDate
+                }
+            
+        })
+        console.log({updateDate})
+        const getUpdatedDate = updateDate.date
+        // console.log({getUpdatedDate})
+        const getTotalVisits = updateDate.total_visits
+        // console.log({getTotalVisits})
+        const [day,month,year] = getUpdatedDate.split('-')
+        const findVisitedMonth = new Date(`${year}-${month}-${day}`);
+        const visitedMonth = findVisitedMonth.getMonth() + 1
+        console.log({visitedMonth})
+        let updateVisitRecord;
+        if(visitedMonth === CurrentMonth){
+
+         updateVisitRecord = await prisma.visit_record.update({
+            where:{
+                id:updatingRowId
+            },
+            data:{
+                requesterId:requesterId,
+                visited:findReportCount,
+                balance_visit:balanceVisits,
+                // date:reportedDate
+            }
+        })
+        console.log({updateVisitRecord})
+      
+        }else{
+            updateVisitRecord = await prisma.visit_record.create({
+              data:{
+                    requesterId:requesterId,
+                    visited:findReportCount,
+                    balance_visit:balanceVisits,
+                    date:reportedDate,
+                    requesterUniqueId:unique_reqId,
+                    dr_Id:drId,
+                    total_visits:getTotalVisits
+                }
+            })
+           
+        }
+        console.log({updateVisitRecord})
+
+    }
+
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfull",
+            data:updateReportingType,
+            count:findReportCount,
+            balanceVisit:balanceVisits,
+            updateVisitRecord:updateVisitRecord
+        }) 
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
 
 
 
@@ -538,4 +729,4 @@ const editRep = async(req,res)=>{
 
 
 
-module.exports = {register_manager,get_Replist,leave_request,accept_leaveRequest,getApplide_leaveReuest,edit_doctor,list_manager,list_expenseRequest,change_reportStatus,search_Rep_Dr,editRep}
+module.exports = {register_manager,get_Replist,leave_request,accept_leaveRequest,getApplide_leaveReuest,edit_doctor,list_manager,list_expenseRequest,change_reportStatus,search_Rep_Dr,editRep,markVisit}
