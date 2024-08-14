@@ -59,6 +59,7 @@ model rep_details{
   address_id         Json?
   headquaters        Json?
   scheduleData       Json?
+  approvalStatus     String?
   schedule_id        schedule[] 
   addressID         doctor_address[]
 }
@@ -70,6 +71,7 @@ model doctor_address{
   userId              String?
   product             Json?
   address             Json?
+  area                Int?
   created_date        DateTime?
 }
 
@@ -79,6 +81,7 @@ model schedule{
   scheduleId         doctor_details @relation(fields: [dr_id],references: [id])
   user_id            String?
   schedule           Json?
+  addressId           Int?
   createdDate        DateTime
 }
 model leave_table{
@@ -244,5 +247,5 @@ model visit_record{
   createdBy           Int?
   adminId             Int?
   reporting_type      String?
-
+  status              String?
  }

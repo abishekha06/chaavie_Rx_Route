@@ -207,7 +207,8 @@ const add_doctor = async (req, res) => {
                 address_ID.push(add_drAddress.id)
                 addedAddress.push(add_drAddress)
             }
-
+             const addressId = addedAddress[0].id
+             console.log({addressId})
             //getting the headquaters id
             const getHeadquaters= await prisma.headquarters.findMany({
                 where:{
@@ -228,7 +229,8 @@ const add_doctor = async (req, res) => {
                     dr_id:doc_id,
                     user_id:userId,
                     schedule:schedule[i],
-                    createdDate:date
+                    createdDate:date,
+                    addressId:addressId
                  }
             })
             console.log(addSchedule)
@@ -795,6 +797,22 @@ const get_doctorDetail = async (req, res) => {
             addressDetail.push(findAddress)
 
         }
+
+        //for getting complete schedule
+        const scheduleList = get_detail.scheduleData
+        console.log({scheduleList})
+       
+        const schedule = []
+
+        for(let i=0; i<scheduleList.length ; i++){
+              const findSchedule = await prisma.schedule.findMany({
+                where:{
+                  id:  scheduleList[i] 
+                }
+              })
+              console.log({findSchedule})
+              schedule.push(findSchedule)
+        }
         console.log({addressDetail})
         //   if(get_detail === 'null'){
         //     return res.status(404).json({
@@ -806,7 +824,8 @@ const get_doctorDetail = async (req, res) => {
         const doctor_data = []
         doctor_data.push({
             ...get_detail,
-            addressDetail:addressDetail
+            addressDetail:addressDetail,
+            schedule:schedule
         })
         res.status(200).json({
             error: false,
@@ -828,7 +847,7 @@ const get_doctorDetail = async (req, res) => {
 const delete_rep = async (req, res) => {
     try {
         const { userId } = req.body
-        const delete_UserData = await prisma.rep_details.update({
+        const delete_UserData = await prisma.userData.update({
             where: {
                 id: userId
             },
@@ -1628,6 +1647,10 @@ const get_headquarters = async (req, res) => {
 
 //getting birthday and anniversary notifications
 
+
+
+
+
 //for getting event notification(in use)
 const notifications = async(req,res)=>{
     try{
@@ -2255,7 +2278,7 @@ const getVisitedDates = async(req,res)=>{
         const getDates = await prisma.reporting_details.findMany({
             where:{
                 unique_reqId:requesterUniqueId,
-                doctor_id:docId
+                doctor_id:docId 
             },
             select:{
                 id:true,
@@ -2346,7 +2369,7 @@ const checkLocation = async(req,res)=>{
     }
 }
 
-//getting the markasvisited table
+//getting the markasvisited table(in use)
 const visitedDetailsByMonth = async(req,res)=>{
     try{
         const{uniqueRequester_Id,month} = req.body
@@ -2367,9 +2390,10 @@ const visitedDetailsByMonth = async(req,res)=>{
             message:"internal server error"
         })
     }
+    
 }
 
-//create travelPlan
+//create travelPlan(in use)
 const createTravelplan = async(req,res)=>{
     try{
         const{user_id,plan} = req.body
@@ -2424,16 +2448,20 @@ const createTravelplan = async(req,res)=>{
 
             }
         }
-
+    //counting  the number of doctors
         const countDrId = {}
+       
         doctorId.forEach(id=>{
             if(countDrId[id]){
                 countDrId[id]++;
+             
             }else{
                 countDrId[id] = 1
             }
         })
         console.log({countDrId})
+    
+
         const totalVisits = []
         totalVisits.push(countDrId)
         console.log({totalVisits})
@@ -2449,33 +2477,57 @@ const createTravelplan = async(req,res)=>{
                 },
                 select:{
                     id:true,
-                    // doc_name:true,
+                    firstName:true,
+                    lastName:true,
                     no_of_visits:true
                 }
             })
             console.log({findVisitCount})
             visitCount.push(findVisitCount)
             uniqueId.add(drId)
-        }
-        }
+
        
+        }
+        }
+        console.log({visitCount})
+        
+      
 
         
-  // Convert visitCount to a dictionary for easy lookup
-//   const visitCountDict = visitCount.reduce((acc, { id, no_of_visits }) => {
-//     acc[id] = no_of_visits;
-//     return acc;
-// }, {});
+       
+//new code for testing the balance count of the doctor
 
-// Calculate missed visits
-// const missedVisits = {};
-// for (const [drId, plannedVisits] of Object.entries(countDrId)) {
-//     const recordedVisits = visitCountDict[drId] || 0;
-//     const missed = plannedVisits - recordedVisits;
-//     if (missed > 0) {
-//         missedVisits[drId] = missed;
-//     }
-// }
+
+        // Convert visitCount to a dictionary for easy lookup
+        const visitCountDict = visitCount.reduce((acc, { id, no_of_visits }) => {
+            acc[id] = no_of_visits;
+            return acc;
+        }, {});
+
+        // Calculate missed visits
+        const missedVisits = {};
+        for (const [drId, plannedVisits] of Object.entries(countDrId)) {
+            const recordedVisits = visitCountDict[drId] || 0;
+            const missed = plannedVisits - recordedVisits;
+            if (missed > 0) {
+                missedVisits[drId] = missed;
+            }
+        }
+
+        // Replace doctor IDs with names in the response
+        const responseWithDoctorNames = visitCount.map(({ id, firstName, lastName }) => {
+            return {
+                doctorName: `${firstName} ${lastName}`,
+                plannedVisits: countDrId[id] || 0,
+                recordedVisits: visitCountDict[id] || 0,
+                missedVisits: missedVisits[id] || 0
+            };
+        });
+     
+
+
+        
+
 
 
 
@@ -2488,8 +2540,9 @@ const createTravelplan = async(req,res)=>{
         dr_id:doctorId,
         countDrId:countDrId,
         visitCount:visitCount,
-        totalVisits:totalVisits
-        // missedVisits: missedVisits
+        totalVisits:totalVisits,
+        // missedVisits: missedVisits,
+        // combinedVisitReport:responseWithDoctorNames
      })
 
     }catch(err){
@@ -2503,7 +2556,7 @@ const createTravelplan = async(req,res)=>{
 }
 
 
-//getting the travelPlan
+//getting the travelPlan(in use)
 const getTravelPlan = async(req,res)=>{
     try{
         const{travelPlanId} = req.body
@@ -2548,7 +2601,7 @@ const getTravelPlan = async(req,res)=>{
     }
 }
 
-//change status for travelPlan
+//change status for travelPlan(in use)
 const changeStatus = async(req,res)=>{
     try{
         const{tripId} = req.body

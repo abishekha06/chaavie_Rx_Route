@@ -50,7 +50,8 @@ const userRegistration = async(req,res)=>{
                 reporting_type:reportingType,
                 createdBy:createdBy,
                 adminId:adminid,
-                uniqueId:uniqueId
+                uniqueId:uniqueId,
+                status:"Active"
             }
         })
         console.log({registration})
@@ -119,7 +120,7 @@ const listArea = async(req,res)=>{
 const listDoctors = async(req,res)=>{
     console.log({req})
     try{
-        const {area} = req.body
+        const {area,day,userId} = req.body
         const findAreaId = await prisma.headquarters.findMany({
             where:{
                 sub_headquarter:area
@@ -133,14 +134,53 @@ const listDoctors = async(req,res)=>{
             where:{
                 headquaters:{
                     equals:areaId
-                }
+                },
+            
+               created_UId:userId
+                
             }
         })
+        console.log({findDr})
+        const ScheduleList = []
+        for(let i=0; i<findDr.length ;i++){
+            const drId = findDr[i].id
+            console.log({drId})
+            const firstName = findDr[i].firstName
+            const lastName = findDr[i].lastName
+            const visitType = findDr[i].visit_type
+
+            //fing the schedule of the doctor
+            const findSchedule = await prisma.schedule.findMany({
+                where:{
+                 schedule:{
+                    path:['day'],
+                    equals:day
+                 },
+                 dr_id:drId
+                
+                }
+            })
+            console.log({findSchedule})
+
+               if (findSchedule.length > 0) {
+        ScheduleList.push({
+            doctor: {
+                id: drId,
+                firstName: firstName,
+                lastName: lastName,
+                visitType: visitType,
+                schedule: findSchedule
+            }
+        });
+    }
+        }
+
+
         res.status(200).json({
             error:false,
             success:true,
             message:"Successfull",
-            data:findDr
+            data:ScheduleList
         })
     }catch(err){
         console.log({err})
@@ -234,16 +274,131 @@ const getAddedDoctor = async(req,res)=>{
 }
 
 
+//for getting travel plan for a day
+const todaysTravelPlan = async(req,res)=>{
+    try{
+        const {date,userId} = req.body
+        const todaysPlan = await prisma.detailedTravelPlan.findMany({
+            where:{
+                date:date,
+                user_id:userId,
+                status:"Approved"
+            }
+        })
+        console.log({todaysPlan})
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfull",
+            data:todaysPlan
+        })
+
+    }catch(err){
+        console.log({err}) 
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"Internal server error"
+        })
+    }
+}
+
+//adding schedule for doctor
+const addSchedule = async(req,res)=>{
+    try{
+        const{drId,userId,schedule} = req.body
+        const addScheduleData = await prisma.schedule.create({
+           data:{
+            dr_id:drId,
+            user_id:userId,
+            schedule:schedule
+           }
+        })
+        console.log({addScheduleData})
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfully added the schedule details",
+            data:addScheduleData
+        })
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"internal server error"
+        })
+    }
+}
+
+
+//edit schedule
+const editSchedule = async(req,res)=>{
+    try{
+        const{addressId,userId,drId,schedule} = req.body
+        const date = new Date()
+         
+        //check the address
+        const checkAddress = await prisma.doctor_address.findMany({
+            where:{
+                id:addressId
+            }
+        })
+
+        if(checkAddress.length === 0){
+            return res.status(404).json({
+                error:true,
+                success:false,
+                message:"Address not found"
+            })
+        }
+        const editedSchedule = await prisma.schedule.create({
+           data:{
+               dr_id:drId,
+               user_id:userId,
+               schedule:schedule,
+               addressId:addressId,
+               createdDate:date
+            }
+        })
+        console.log({editedSchedule})
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfully edited the schedule",
+            data:editedSchedule
+        })
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"Internal server error"
+        })
+    }
+}
+
+
+//api for approving doctors
+const approveDoctors = async(req,res)=>{
+    try{
+        const {dr_id} = req.body
+        
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"Internal server error"
+        })
+    }
+}
 
 
 
 
 
-
-
-
-
-
-
-
-module.exports ={userRegistration,listArea,listDoctors,getAddedDoctor}
+module.exports ={userRegistration,listArea,listDoctors,getAddedDoctor,todaysTravelPlan,addSchedule,editSchedule,approveDoctors}

@@ -10,7 +10,7 @@ function formatnewDate(date) {
   }
 
 
-//manager registration
+//manager registration(not in use)
 const register_manager = async(req,res)=>{
     try{
         const{name,dob,gender,qualification,designation,nationality,email,mobile,address,city,pincode,type,password} = req.body
@@ -76,7 +76,7 @@ const register_manager = async(req,res)=>{
     }
 }
 
-//get employee(rep)list
+//get employee(rep)list  (in use)
 const get_Replist = async(req,res)=>{
     try{
         const {manager_id} = req.body
@@ -87,9 +87,9 @@ const get_Replist = async(req,res)=>{
                 message:"Manager ID is required"
             })
         }
-        const getRep = await prisma.rep_details.findMany({
+        const getRep = await prisma.userData.findMany({
             where:{
-              created_by:manager_id
+              createdBy:manager_id
             }
         })
         console.log({getRep})
@@ -117,8 +117,9 @@ const get_Replist = async(req,res)=>{
     }
 }
 
-//leave request
+//leave request (in use)
 const leave_request = async(req,res)=>{
+    console.log({req})
     try{
         const {requester_uniqueId,reason,to_date,from_date,type,requester_id} = req.body
          const date = new Date()
@@ -138,15 +139,13 @@ const leave_request = async(req,res)=>{
         //  })
         //  console.log({applyLeave})
         
-         const find_repData = await prisma.rep_details.findMany({
+         const find_repData = await prisma.userData.findMany({
             where:{
-                unique_id:{
-                    startsWith:"Rep"
-                }
+               uniqueId:requester_uniqueId
             }
          })
           console.log({find_repData})
-          const managerId = find_repData[0]?.reporting_officer
+          const managerId = find_repData[0]?.reportingOfficer_id
           console.log({managerId})
           //add mangerId in the table leave_table
          
@@ -187,7 +186,9 @@ const leave_request = async(req,res)=>{
     }
 }
 
-//accepting the leave request of rep
+
+
+//accepting the leave request of rep (in use)
 const accept_leaveRequest = async(req,res)=>{
     const{leave_tableId,rep_id,modified_by,status,leave_type} = req.body
     const date =new Date()
@@ -222,13 +223,13 @@ const accept_leaveRequest = async(req,res)=>{
     }
 }
 
-//for getting the applied leaveRequest by rep 
+//for getting the applied leaveRequest by rep (in use)
 const getApplide_leaveReuest = async(req,res)=>{
     console.log({req})
     try{
-        const {managerId} = req.body
+        const {reportingOfficer_id} = req.body
                 // Ensure managerId is defined and valid
-                if (!managerId) {
+                if (!reportingOfficer_id) {
                     return res.status(400).json({
                         error: true,
                         success: false,
@@ -237,11 +238,11 @@ const getApplide_leaveReuest = async(req,res)=>{
                 }
         const get_requestedRep = await prisma.leave_table.findMany({
             where:{
-                uniqueRequester_Id:{
-                    startsWith:"Rep"
-                },
+                // uniqueRequester_Id:{
+                //     startsWith:"Rep"
+                // },
                 // status:"pending",
-                manager_uniqueId:managerId
+                manager_uniqueId:reportingOfficer_id
 
             },
             orderBy:{
@@ -256,9 +257,10 @@ const getApplide_leaveReuest = async(req,res)=>{
             console.log("jjjjj")
             const leaveRequest=get_requestedRep[i]
             console.log({leaveRequest})
-            const findRepdata = await prisma.rep_details.findMany({
+            
+            const findRepdata = await prisma.userData.findMany({
                 where:{
-                    unique_id:leaveRequest?.uniqueRequester_Id
+                    uniqueId:leaveRequest?.uniqueRequester_Id
                 }
             })
             console.log({findRepdata})
@@ -340,10 +342,15 @@ const edit_doctor = async(req,res)=>{
     }
 }
 
-//list all managers
+//list all managers (in use)
 const list_manager = async(req,res)=>{
     try{
-        const list_manager = await prisma.manager_details.findMany()
+       
+        const list_manager = await prisma.userData.findMany({
+            where:{
+               role:"Manager"
+            }
+        })
         res.status(200).json({
             error:true,
             success:false,
@@ -360,7 +367,7 @@ const list_manager = async(req,res)=>{
     }
 }
  
-//list expense report 
+//list expense report (in use)
 const list_expenseRequest = async(req,res)=>{
     try{
         const{reporting_officerId} = req.body
@@ -378,9 +385,9 @@ const list_expenseRequest = async(req,res)=>{
             const dr_id = list_report[i].doct_id
           const userId = ExpenseReport.uniqueRequesterId
           console.log({userId})
-          const find_userDetails = await prisma.rep_details.findMany({
+          const find_userDetails = await prisma.userData.findMany({
             where:{
-               unique_id:userId 
+               uniqueId:userId 
             },
             select:{
                 id:true,
@@ -394,7 +401,8 @@ const list_expenseRequest = async(req,res)=>{
             },
             select:{
                 id:true,
-                doc_name:true
+                firstName:true,
+                lastName:true
             }
           })
           console.log({find_userDetails})
@@ -420,7 +428,7 @@ const list_expenseRequest = async(req,res)=>{
     }
 }
 
-//accept or reject pending request
+//accept or reject pending request (in use)
 const change_reportStatus = async(req,res)=>{
     try{
         const {report_id,status,approved_by} = req.body
@@ -451,24 +459,25 @@ const change_reportStatus = async(req,res)=>{
      })
     }
 }
-// searching both dr and rep
+// searching both dr and rep  (in use)
 const search_Rep_Dr = async(req,res)=>{
     try{
         const {searchData} = req.body
         const find_fromDr = await prisma.doctor_details.findMany({
             where:{
-                doc_name:{
+                firstName:{
                     startsWith:`Dr.${searchData}`,
                     mode:'insensitive'
                 }
             }
         })
-        const find_fromRep = await prisma.rep_details.findMany({
+        const find_fromRep = await prisma.userData.findMany({
             where:{
                 name:{
                     startsWith:searchData,
                     mode:'insensitive'
-                }
+                },
+                role:"Rep"
             }
         })
      const resultarray = []
@@ -539,7 +548,7 @@ const editRep = async(req,res)=>{
     }
 }
 
-//markasvisited
+//markasvisited (in use)
 const markVisit = async(req,res)=>{
     try{
         const{reporterUniqueId,reporterId,date,time,products,remark,doctorId} = req.body
@@ -710,7 +719,7 @@ const markVisit = async(req,res)=>{
             data:updateReportingType,
             count:findReportCount,
             balanceVisit:balanceVisits,
-            updateVisitRecord:updateVisitRecord
+            // updateVisitRecord:updateVisitRecord
         }) 
 
     }catch(err){
