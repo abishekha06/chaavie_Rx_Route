@@ -36,7 +36,7 @@ jobs:
 
     - name: Build Flutter Web
       run: flutter build web
-      working-directory: rx_frontend
+      working-directory: rx_frontend/rx_frontend
 
     - name: Deploy to S3
       env:
