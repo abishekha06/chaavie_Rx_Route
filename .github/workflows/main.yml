@@ -40,8 +40,8 @@ jobs:
 
     - name: Deploy to S3
       env:
-        AWS_REGION: 'ap-south-1'
-        AWS_S3_BUCKET: 'rx-route'
+        AWS_REGION: ap-south-1
+        AWS_S3_BUCKET: rx-route
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
