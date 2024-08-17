@@ -32,7 +32,7 @@ jobs:
 
     - name: Install Dependencies
       run: flutter pub get
-      working-directory: rx_frontend/rx_frontend
+      working-directory: rx_frontend
 
     - name: Build Flutter Web
       run: flutter build web
