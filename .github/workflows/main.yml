@@ -14,7 +14,7 @@ jobs:
     - name: Checkout Frontend Code
       uses: actions/checkout@v3
       with:
-        repository: vaisak1992/chaavie_Rx_Route
+        repository: vaisak1992/chaavie_Rx_Route/frontend_code
         path: rx_frontend
 
     - name: Set up Flutter
