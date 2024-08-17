@@ -32,7 +32,7 @@ jobs:
 
     - name: Install Dependencies
       run: flutter pub get
-      working-directory: rx_frontend
+      working-directory: /home/runner/work/chaavie_Rx_Route/rx_frontend
 
     - name: Build Flutter Web
       run: flutter build web
