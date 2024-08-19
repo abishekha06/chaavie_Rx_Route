@@ -379,6 +379,15 @@ const get_addedDoctors = async (req, res) => {
             });
         }
 
+        const findUserRole = await prisma.userData.findMany({
+            where:{
+                uniqueId:rep_UniqueId
+            }
+        })
+        console.log({findUserRole})
+        const userRole = findUserRole[0].role
+        console.log({userRole})
+
         const getDr = await prisma.doctor_details.findMany({
             where: {
                 created_UId: rep_UniqueId,
@@ -389,10 +398,11 @@ const get_addedDoctors = async (req, res) => {
 
         
 
-        if (rep_UniqueId.startsWith('Mngr')) {
-            const find_mngrDetails = await prisma.manager_details.findMany({
+        if(userRole === "Manager") {
+            const find_mngrDetails = await prisma.userData.findMany({
                 where: {
-                    unique_id: rep_UniqueId
+                    uniqueId: rep_UniqueId,
+                    role:"Manager"
                 }
             });
             console.log({ find_mngrDetails });
@@ -408,16 +418,16 @@ const get_addedDoctors = async (req, res) => {
             const manager_id = find_mngrDetails[0].id;
             console.log({ manager_id });
 
-            const find_rep = await prisma.rep_details.findMany({
+            const find_rep = await prisma.userData.findMany({
                 where: {
-                    created_by: manager_id
+                    reportingOfficer_id: manager_id
                 }
             });
             console.log({ find_rep });
 
             const repaddedDR = [...getDr];
             for (let i = 0; i < find_rep.length; i++) {
-                const rep_UniqueId = find_rep[i].unique_id;
+                const rep_UniqueId = find_rep[i].uniqueId;
                 console.log({ rep_UniqueId });
 
                 const find_addedDr = await prisma.doctor_details.findMany({

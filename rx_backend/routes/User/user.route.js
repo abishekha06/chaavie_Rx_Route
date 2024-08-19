@@ -1,6 +1,8 @@
 const express = require('express')
 const userRouter =express.Router()
-const {userRegistration,listArea,listDoctors,getAddedDoctor,todaysTravelPlan,addSchedule,editSchedule,approveDoctors} = require('./user.controller')
+const {userRegistration,listArea,listDoctors,getAddedDoctor,todaysTravelPlan,addSchedule,editSchedule,approveDoctors,
+    getDoctorList_forApproval
+} = require('./user.controller')
 
 
 
@@ -13,7 +15,7 @@ userRouter.post('/todaysTravelPlan',todaysTravelPlan)
 userRouter.post('/addSchedule',addSchedule)
 userRouter.post('/editSchedule',editSchedule)
 userRouter.post('/approveDoctors',approveDoctors)
-
+userRouter.post('/doctorForApproval',getDoctorList_forApproval)
 
 
 

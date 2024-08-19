@@ -384,8 +384,58 @@ const editSchedule = async(req,res)=>{
 //api for approving doctors
 const approveDoctors = async(req,res)=>{
     try{
-        const {dr_id} = req.body
+        const {dr_id,status} = req.body
         
+        const approveDoctor = await prisma.doctor_details.update({
+            where:{
+                id:dr_id
+            },
+            data:{
+                approvalStatus:status
+            }
+        })
+        console.log({approveDoctor})
+        res.status(200).json({
+            error:false,
+            success:true,
+            message:"Successfull",
+            data:approveDoctor
+        })
+
+    }catch(err){
+        console.log({err})
+        res.status(404).json({
+            error:true,
+            success:false,
+            message:"Internal server error"
+        })
+    }
+}
+
+//getting dr for approval
+const getDoctorList_forApproval = async(req,res)=>{
+    try{
+        const{userId} = req.body
+
+        const findRep = await prisma.userData.findMany({
+            where:{
+                reportingOfficer_id:userId
+            }
+        })
+        console.log({findRep})
+        const rep = []
+        for(let i=0; i<findRep.length ; i++){
+            const userData = findRep[i].uniqueId
+            console.log({userData})
+            const findAddedRep = await prisma.doctor_details.findMany({
+                where:{
+                    created_UId:userData,
+                    approvalStatus:"pending"
+                }
+            })
+            console.log({findAddedRep})
+             
+        }
 
     }catch(err){
         console.log({err})
@@ -400,5 +450,4 @@ const approveDoctors = async(req,res)=>{
 
 
 
-
-module.exports ={userRegistration,listArea,listDoctors,getAddedDoctor,todaysTravelPlan,addSchedule,editSchedule,approveDoctors}
+module.exports ={userRegistration,listArea,listDoctors,getAddedDoctor,todaysTravelPlan,addSchedule,editSchedule,approveDoctors,getDoctorList_forApproval}
