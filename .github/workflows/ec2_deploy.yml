@@ -1,32 +1,28 @@
-name: Deploy to EC2
+name: Deploy Backend
 
 on:
   push:
     branches:
-      - frontend_code  # Trigger deployment on push to the main branch
+      - frontend_code  # Adjust this to your branch name if different
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Backend Code
         uses: actions/checkout@v3
         with:
           repository: vaisak1992/chaavie_Rx_Route
           path: rx_backend
 
-      - name: Set up SSH key
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
-
-      - name: Deploy to EC2
+      - name: Copy Backend Files to EC2
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
-          # Define variables
-          SERVER_IP="52.66.145.37"
-          USER="ec2-user"
-          TARGET_DIR="/home/ec2-user/rx_route_test"
-          
-          # Rsync files to the server
-          rsync -avz --delete ./ $USER@$SERVER_IP:$TARGET_DIR
+          echo "${SSH_PRIVATE_KEY}" > private_key.pem
+          chmod 600 private_key.pem
+          scp -o StrictHostKeyChecking=no -r -i private_key.pem rx_backend/* ec2-user@52.66.145.37:/home/ec2-user/rx_route_test
+
+      - name: Cleanup SSH Key
+        run: rm private_key.pem
