@@ -3,7 +3,7 @@ name: Deploy Application
 on:
   push:
     branches:
-#      - frontend_code
+      - frontend_code
 
 jobs:
   build-frontend:
