@@ -43,7 +43,7 @@ class _LoginPageNewState extends State<LoginPageNew> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('User ID',style: text50012black,),
+                    Text('User ID Gikhin',style: text50012black,),
                     SizedBox(height: 10,),
                     Container(
                       decoration: BoxDecoration(
