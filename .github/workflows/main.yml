@@ -60,7 +60,7 @@ jobs:
       run: |
         echo "${SSH_PRIVATE_KEY}" > private_key.pem
         chmod 400 private_key.pem
-        scp -o StrictHostKeyChecking=no -r -i private_key.pem rx_backend/* ec2-user@52.66.145.37:/home/ec2-user/rx_route_test
+        scp -o StrictHostKeyChecking=no -r -i private_key.pem rx_backend/rx_backend/* ec2-user@52.66.145.37:/home/ec2-user/rx_route_test
 
     - name: Cleanup SSH Key
       run: rm private_key.pem
