@@ -48,4 +48,19 @@ jobs:
         aws s3 sync rx_frontend/build/web s3://$AWS_S3_BUCKET/ --region $AWS_REGION
       working-directory: rx_frontend
 
-  
+    - name: Checkout Backend Code
+      uses: actions/checkout@v3
+      with:
+        repository: vaisak1992/chaavie_Rx_Route
+        path: rx_backend
+
+    - name: Copy Backend Files to EC2
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+      run: |
+        echo "${SSH_PRIVATE_KEY}" > private_key.pem
+        chmod 600 private_key.pem
+        scp -o StrictHostKeyChecking=no -r -i private_key.pem rx_backend/* ec2-user@52.66.145.37:/home/ec2-user/rx_route_test
+
+    - name: Cleanup SSH Key
+      run: rm private_key.pem
