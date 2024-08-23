@@ -1,13 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:rx_route/New%20Rx%20Project/Manager/Login%20page.dart';
+import 'package:rx_route/New%20Rx%20Project/Rep/Rep%20Home%20page.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../New Rx Project/Manager/Login page.dart';
+import '../New Rx Project/Manager/BottomNav/BottomNavManager.dart';
 import '../Util/Utils.dart';
-import '../View/authView/loginView.dart';
-import '../View/homeView/home_view.dart';
-import '../View/homeView/home_view_rep.dart';
 import '../app_colors.dart';
 import '../constants/styles.dart';
 import '../widgets/bubble.dart';
@@ -41,15 +41,17 @@ class _SplashScreenState extends State<SplashScreen> {
     print('userType:$userType');
     print('objectddd$preferences');
     if(uniqueID != null){
-      if(userType == 'rep'){
+      if(userType == 'Rep'){
+        print('hello yes.....');
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeViewRep()),
+          MaterialPageRoute(builder: (context) => const RepHomepage()),
         );
-      }else if(userType == 'manager'){
+      }else if(userType == 'Manager'){
+        print('hello no.....');
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeView()),
+          MaterialPageRoute(builder: (context) => const BottomNavigationMngr()),
         );
       }
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPageNew(),));
@@ -125,12 +127,12 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
           Center(
             child: Text(
-              'RXROUTE',
+              'Rx ROUTE',
               style: TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                fontStyle: FontStyle.italic
+                  fontSize: 48,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  fontStyle: FontStyle.italic
               ),
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rx_route/New%20Rx%20Project/Manager/BottomNav/My%20lists/Chemist%20list.dart';
 import 'package:rx_route/New%20Rx%20Project/Manager/BottomNav/My%20lists/Doctor%20list.dart';
 import 'package:rx_route/New%20Rx%20Project/Manager/BottomNav/My%20lists/Employee_list.dart';
+import 'package:rx_route/View/homeView/Employee/emp_list.dart';
 
 import '../../../../app_colors.dart';
 import '../../../../constants/styles.dart';
@@ -25,7 +26,7 @@ class _My_listState extends State<My_list> with SingleTickerProviderStateMixin {
 
   List<Widget> _pages = [
     DoctorList(),
-    EmployeeList(),
+    EmpList(),
     ChemistList(),
   ];
 

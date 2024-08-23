@@ -31,7 +31,7 @@ class ExpenseApprovalManagerWidgets {
     print('uid is:${userID}');
     String url = AppUrl.get_expense_requests_manager;
     Map<String, dynamic> data = {
-      "reporting_officerId": 1
+      "reporting_officerId": int.parse(userID.toString())
     };
 
     try {

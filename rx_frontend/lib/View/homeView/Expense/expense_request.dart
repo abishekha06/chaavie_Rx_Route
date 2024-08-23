@@ -61,7 +61,7 @@ class _ExpenseRequestPageState extends State<ExpenseRequestPage> {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? uniqueId = preferences.getString('uniqueID');
     String url = AppUrl.getdoctors;
-    Map<String, dynamic> data = {"rep_UniqueId": uniqueId};
+    Map<String, dynamic> data = {"rep_UniqueId": 'MUS854'};
 
     try {
       final response = await http.post(
@@ -96,7 +96,7 @@ class _ExpenseRequestPageState extends State<ExpenseRequestPage> {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? uniqueId = preferences.getString('uniqueID');
     var data = {
-      "requesterUniqueId":uniqueId,
+      "requesterUniqueId":1,
       "docId":selectedDoctorId
     };
     String url = AppUrl.getvisitedDates; // Replace with your API URL

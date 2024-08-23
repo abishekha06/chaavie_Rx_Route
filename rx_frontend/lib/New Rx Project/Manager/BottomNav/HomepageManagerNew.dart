@@ -17,6 +17,7 @@ class HomepageManager extends StatefulWidget {
 class _HomepageManagerState extends State<HomepageManager> {
   List<dynamic> todayAnniversaries = [];
   List<dynamic> upcomingBirthdays = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -26,20 +27,29 @@ class _HomepageManagerState extends State<HomepageManager> {
 
   Future<void> fetchEvents() async {
     final url = Uri.parse(AppUrl.getEvents); // Replace with your API URL
-    final response = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: json.encode({"requesterUniqueId": "MUS854"}),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({"requesterUniqueId": "MUS854"}),
+      );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          todayAnniversaries = data['todayEvents'][0]['todayAnniversary'];
+          upcomingBirthdays = data['UpcomingEvents'][0]['BirthdayNotification'];
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false; // Stop loading if error
+        });
+      }
+    } catch (e) {
       setState(() {
-        todayAnniversaries = data['todayEvents'][0]['todayAnniversary'];
-        upcomingBirthdays = data['UpcomingEvents'][0]['BirthdayNotification'];
+        isLoading = false; // Stop loading if exception
       });
-    } else {
-      // Handle error
     }
   }
 
@@ -75,7 +85,9 @@ class _HomepageManagerState extends State<HomepageManager> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Column(
+        child: isLoading
+            ? Center(child: CircularProgressIndicator()) // Show loading indicator
+            : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -205,20 +217,32 @@ class _HomepageManagerState extends State<HomepageManager> {
             Text('Events', style: text40016black),
             SizedBox(height: 10),
 
-            // Upcoming Birthdays
-            if (upcomingBirthdays.isNotEmpty) ...[
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+            // Events Section
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (todayAnniversaries.isEmpty && upcomingBirthdays.isEmpty)
+                    Center(
+                      child: Text(
+                        'There are no events',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.whiteColor,
+                          fontSize: 14,
+                        ),
+                      ),
+                    )
+                  else ...[
+                    // Display Upcoming Birthdays
+                    if (upcomingBirthdays.isNotEmpty) ...[
                       Text(
-                        'Upcoming Birthday',
+                        'Upcoming Birthdays',
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           color: AppColors.whiteColor,
@@ -264,36 +288,36 @@ class _HomepageManagerState extends State<HomepageManager> {
                         ),
                         SizedBox(height: 10),
                       ],
-                      SizedBox(height: 20),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor2,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Notify me',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.whiteColor,
-                                  fontSize: 12,
-                                ),
+                    ],
+                    SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor2,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Notify me',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.whiteColor,
+                                fontSize: 12,
                               ),
-                              SizedBox(width: 10),
-                              Icon(Icons.notifications_active, color: AppColors.whiteColor),
-                            ],
-                          ),
+                            ),
+                            SizedBox(width: 10),
+                            Icon(Icons.notifications_active, color: AppColors.whiteColor),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  ],
+                ],
               ),
-            ],
+            ),
           ],
         ),
       ),

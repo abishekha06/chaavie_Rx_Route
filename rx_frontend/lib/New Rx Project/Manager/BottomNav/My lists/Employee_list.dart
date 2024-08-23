@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../../../../constants/styles.dart';
 import '../../../../res/app_url.dart';
+import 'Employee details/single employee.dart';
 
 class EmployeeList extends StatefulWidget {
   const EmployeeList({super.key});
@@ -81,29 +83,40 @@ class _EmployeeListState extends State<EmployeeList> {
   }
 
   Future<void> _fetchEmployees() async {
-    final url = 'http://52.66.145.37:3004/manager/get_Replist';
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'manager_id': 1}),
-    );
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? userID = preferences.getString('uniqueID');
+    try {
+      final url = 'http://52.66.145.37:3004/manager/get_Replist';
+      final response = await http.post(
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      if (data['success']) {
-        setState(() {
-          _employees = List<Map<String, dynamic>>.from(data['data']);
-          _isLoading = false;
-        });
+        Uri.parse(url),
+
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'manager_id': int.parse(userID.toString())}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          setState(() {
+            _employees = List<Map<String, dynamic>>.from(data['data']);
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _errorMessage = data['message'] ?? 'Unknown error';
+            _isLoading = false;
+          });
+        }
       } else {
         setState(() {
-          _errorMessage = data['message'];
+          _errorMessage = 'Server error: ${response.statusCode}';
           _isLoading = false;
         });
       }
-    } else {
+    } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to load data';
+        _errorMessage = 'An error occurred: $e';
         _isLoading = false;
       });
     }
@@ -112,6 +125,10 @@ class _EmployeeListState extends State<EmployeeList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Employee List', style: text40016black),
+        centerTitle: true,
+      ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _errorMessage.isNotEmpty
@@ -126,10 +143,13 @@ class _EmployeeListState extends State<EmployeeList> {
               leading: CircleAvatar(
                 child: Text(employee['name']?.substring(0, 1) ?? '?'),
               ),
-              title: Text(employee['name'] ?? 'No Name', style: text50014black),
-              subtitle: Text(employee['email'] ?? 'No Email', style: text50012black),
+              title: Text(employee['name'] ?? 'No Name',
+                  style: text50014black),
+              subtitle: Text(employee['email'] ?? 'No Email',
+                  style: text50012black),
               trailing: PopupMenuButton<String>(
-                onSelected: (action) => _handleMenuAction(action, employee),
+                onSelected: (action) =>
+                    _handleMenuAction(action, employee),
                 itemBuilder: (BuildContext context) {
                   return [
                     PopupMenuItem<String>(
@@ -155,6 +175,15 @@ class _EmployeeListState extends State<EmployeeList> {
                   ];
                 },
               ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EmployeeDetailsPage(
+                        employeeId: employee['id']),
+                  ),
+                );
+              },
             );
           },
         ),

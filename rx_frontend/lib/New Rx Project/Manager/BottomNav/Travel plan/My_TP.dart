@@ -84,7 +84,10 @@ class _Mngr_T_PState extends State<Mngr_T_P> with SingleTickerProviderStateMixin
                   ),
                 ],
               ),
-              child: TabBar(labelStyle: text40014,
+              child: TabBar(
+
+                unselectedLabelColor: Colors.white,
+                labelStyle: text40014,
 
                 controller: _tabController,
                 tabs: _tabs,

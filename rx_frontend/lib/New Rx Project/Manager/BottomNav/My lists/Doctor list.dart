@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rx_route/res/app_url.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../constants/styles.dart';
 import 'Doctor_details/doctor_detials.dart';
@@ -26,11 +27,13 @@ class _DoctorListState extends State<DoctorList> {
   }
 
   Future<void> _fetchDoctors() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? userID = preferences.getString('uniqueID');
     try {
       final response = await http.post(
         Uri.parse(AppUrl.getdoctors),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'rep_UniqueId': 'MUS854'}),
+        body: jsonEncode({'rep_UniqueId': userID}),
       );
 
       if (response.statusCode == 200) {

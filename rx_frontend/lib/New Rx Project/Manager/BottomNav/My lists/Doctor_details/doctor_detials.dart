@@ -176,6 +176,8 @@ class _DoctorDetailsPageState extends State<DoctorDetailsPage> with TickerProvid
               Text('Basic Information', style: text50014black),
               const SizedBox(height: 10),
               TabBar(
+                tabAlignment: TabAlignment.start,
+                isScrollable: true,
                 controller: _tabController,
                 labelColor: AppColors.primaryColor,
                 unselectedLabelColor: Colors.black54,
@@ -226,9 +228,19 @@ class _DoctorDetailsPageState extends State<DoctorDetailsPage> with TickerProvid
       itemCount: _doctorDetails!['schedule'].length,
       itemBuilder: (context, index) {
         final schedule = _doctorDetails!['schedule'][index][0];
-        return ListTile(
-          title: Text(schedule['schedule']['day'], style: text50014black),
-          subtitle: Text('${schedule['schedule']['start_time']} - ${schedule['schedule']['end_time']}', style: text50014black),
+        return Column(mainAxisAlignment: MainAxisAlignment.start,crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 10,),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  height: 30,width:100,
+                    color: AppColors.primaryColor,
+                    child: Center(child: Text(schedule['schedule']['day'], style: text50014))),
+              ),
+              Text('${schedule['schedule']['start_time']} - ${schedule['schedule']['end_time']}', style: text50014black),
+            ],
+
         );
       },
     );

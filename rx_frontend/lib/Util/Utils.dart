@@ -20,7 +20,7 @@ class Utils{
   static String? userName;
   static String? email;
   static String? userId;
-  static String? uniqueID = 'MUS854';
+  static String? uniqueID ;
 
   static final Future<SharedPreferences> prefs = SharedPreferences.getInstance();
 

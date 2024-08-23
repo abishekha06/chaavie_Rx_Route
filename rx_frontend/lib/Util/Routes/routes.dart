@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:rx_route/New%20Rx%20Project/Manager/BottomNav/BottomNavManager.dart';
 import 'package:rx_route/Util/Routes/routes_name.dart';
 
 
 import '../../New Rx Project/Manager/Login page.dart';
+import '../../New Rx Project/Rep/Rep Home page.dart';
 import '../../Splash/splashscreen.dart';
 import '../../Splash/successfully_added.dart';
 import '../../View/Add TP/add_tp.dart';
@@ -29,10 +31,10 @@ class Routes{
         return MaterialPageRoute(builder: (BuildContext context) =>const SuccessfullyAdded() ,);
 
       case RoutesName.home_rep:
-        return MaterialPageRoute(builder: (BuildContext context)=>const HomeViewRep());
+        return MaterialPageRoute(builder: (BuildContext context)=>const RepHomepage());
 
       case RoutesName.home_manager:
-        return MaterialPageRoute(builder: (BuildContext context)=>const HomeView());
+        return MaterialPageRoute(builder: (BuildContext context)=>const BottomNavigationMngr());
 
       case RoutesName.login:
         return MaterialPageRoute(builder: (BuildContext context)=>const LoginPageNew());

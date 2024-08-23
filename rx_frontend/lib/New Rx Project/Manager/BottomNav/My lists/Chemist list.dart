@@ -68,6 +68,7 @@ class _ChemistListState extends State<ChemistList> {
   }
 
   Future<void> _fetchChemists() async {
+
     final url = 'http://52.66.145.37:3004/rep/get_chemist';
     final response = await http.get(Uri.parse(url));
 

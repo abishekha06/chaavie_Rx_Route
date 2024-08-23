@@ -31,7 +31,7 @@ class ManagerApproveLeavesWidget {
     String? userID = preferences.getString('userID');
     String url = AppUrl.getLeaveRequest;
     Map<String, dynamic> data = {
-      "reportingOfficer_id": 1
+      "reportingOfficer_id": int.parse(userID.toString())
     };
 
     try {
